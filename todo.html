@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlauwWijzer - Todo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+    <header>
+        <div class="logo">blauwwijzer</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="todo.html">Todo</a>
+            <a href="#">lorum ipsum</a>
+            <a href="#">lorum ipsum</a>
+        </nav>
+        <button id="theme-toggle-btn">🌙</button>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="todo-container">
+                <h2>Todo Lijst</h2>
+                <form id="todo-form">
+                    <input type="text" id="todo-input" placeholder="Voeg een nieuwe taak toe...">
+                    <button type="submit">Toevoegen</button>
+                </form>
+                <ul id="todo-list"></ul>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/darkMode.js"></script>
+    <script src="js/todo.js"></script>
+</body>
+</html>

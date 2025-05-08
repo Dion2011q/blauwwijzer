@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlauwWijzer - Rooster</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+    <header>
+        <div class="logo">blauwwijzer</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="todo.html">Todo</a>
+            <a href="#">lorum ipsum</a>
+            <a href="#">lorum ipsum</a>
+        </nav>
+        <button id="theme-toggle-btn">🌙</button>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 id="weekrooster-title">Weekrooster</h1>
+            <p id="current-week">Laden...</p>
+
+            <div class="week-navigation">
+                <button id="prev-week-btn" class="btn">Vorige Week</button>
+                <button id="next-week-btn" class="btn">Volgende Week</button>
+            </div>
+
+            <div id="schedule-table-container">
+                <div id="loading-indicator" class="loading-indicator">
+                    <div class="spinner"></div>
+                    <p>Rooster laden...</p>
+                </div>
+
+                <div id="calendar-error" class="error-message hidden">
+                    <p>Fout bij laden van rooster</p>
+                </div>
+
+                <table id="schedule-table" class="hidden">
+                    <thead>
+                        <tr>
+                            <th>Tijd</th>
+                            <th>Maandag</th>
+                            <th>Dinsdag</th>
+                            <th>Woensdag</th>
+                            <th>Donderdag</th>
+                            <th>Vrijdag</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <button id="calendar-settings-btn" class="btn-circle">📅</button>
+    </main>
+
+    <div id="calendar-modal" class="modal">
+        <div class="modal-content">
+            <h2>Kalender URL</h2>
+            <form id="calendar-url-form">
+              <input type="url" id="calendar-url-input" placeholder="Voer je SomToday kalender URL in" />
+              <button type="submit" id="save-calendar-btn" class="btn">Opslaan</button>
+            </form>
+            <button id="close-modal-btn" class="close-button">×</button>
+        </div>
+    </div>
+
+    <script src="js/darkMode.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

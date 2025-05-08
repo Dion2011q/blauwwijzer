@@ -26,23 +26,32 @@ let state = {
 // Initialize the app
 function initApp() {
   // Set up event listeners
-  themeToggleBtn.addEventListener('click', toggleDarkMode);
   calendarSettingsBtn.addEventListener('click', openCalendarModal);
+  
   closeModalBtn.addEventListener('click', closeCalendarModal);
-  saveCalendarBtn.addEventListener('click', saveCalendarUrl);
+  
+  document.getElementById('calendar-url-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    saveCalendarUrl();
+  });
+
   prevWeekBtn.addEventListener('click', goToPreviousWeek);
   nextWeekBtn.addEventListener('click', goToNextWeek);
-  
-  // Check system preference for dark mode
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+
+  // Load saved dark mode preference or use system preference
+  const savedDarkMode = localStorage.getItem('darkMode');
+  if (savedDarkMode !== null) {
+    state.darkMode = savedDarkMode === 'true';
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     state.darkMode = true;
-    document.body.classList.add('dark-theme');
   }
-  
+  document.body.classList.toggle('dark-theme', state.darkMode);
+  themeToggleBtn.textContent = state.darkMode ? '☀️' : '🌙';
+
   // Set up media query listener for theme changes
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
   mediaQuery.addEventListener('change', handleSystemThemeChange);
-  
+
   // If we have a calendar URL, load the schedule
   if (state.calendarUrl) {
     calendarUrlInput.value = state.calendarUrl;
@@ -51,21 +60,13 @@ function initApp() {
     // Show calendar modal if no URL is set
     openCalendarModal();
   }
-  
+
   // Update the week display
   updateWeekDisplay();
 }
 
 // Theme functions
-function toggleDarkMode() {
-  state.darkMode = !state.darkMode;
-  document.body.classList.toggle('dark-theme', state.darkMode);
-}
 
-function handleSystemThemeChange(e) {
-  state.darkMode = e.matches;
-  document.body.classList.toggle('dark-theme', state.darkMode);
-}
 
 // Calendar modal functions
 function openCalendarModal() {
@@ -86,56 +87,112 @@ function saveCalendarUrl() {
   }
 }
 
+// Load saved calendar URL on startup
+const savedCalendarUrl = localStorage.getItem('calendarUrl');
+if (savedCalendarUrl) {
+  state.calendarUrl = savedCalendarUrl;
+  calendarUrlInput.value = savedCalendarUrl;
+  loadScheduleData(); // Direct laden van rooster data
+}
+
 // Week navigation functions
 function getCurrentWeek() {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0 is Sunday, 1 is Monday
-  
+
   // Calculate the start of the week (Monday)
   const start = new Date(now);
   start.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
   start.setHours(0, 0, 0, 0);
-  
+
   // Calculate the end of the week (Friday)
   const end = new Date(start);
   end.setDate(start.getDate() + 4); // 5 days (Mon-Fri)
   end.setHours(23, 59, 59, 999);
-  
+
   return { start, end };
 }
 
 function getNextWeek(startDate) {
   const start = new Date(startDate);
   start.setDate(start.getDate() + 7);
-  
+  start.setHours(0, 0, 0, 0);
+
   const end = new Date(start);
-  end.setDate(start.getDate() + 4);
+  end.setDate(end.getDate() + 4);
   end.setHours(23, 59, 59, 999);
-  
+
   return { start, end };
 }
 
 function getPreviousWeek(startDate) {
   const start = new Date(startDate);
   start.setDate(start.getDate() - 7);
-  
+
   const end = new Date(start);
   end.setDate(start.getDate() + 4);
   end.setHours(23, 59, 59, 999);
-  
+
   return { start, end };
 }
 
+function animateWeekTransition(direction) {
+  const table = document.getElementById('schedule-table');
+  if (!table) return;
+  
+  // Reset transitie
+  table.style.transition = 'none';
+  table.style.transform = 'translateX(0)';
+  table.offsetHeight;
+  
+  // Stel start positie in
+  table.style.transform = `translateX(${direction === 'next' ? '-' : ''}100%)`;
+  
+  // Start animatie
+  setTimeout(() => {
+    table.style.transition = 'transform 0.3s ease-in-out';
+    table.style.transform = 'translateX(0)';
+  }, 50);
+}
+
 function goToNextWeek() {
+  animateWeekTransition('next');
   state.currentWeek = getNextWeek(state.currentWeek.start);
   updateWeekDisplay();
   loadScheduleData();
 }
 
 function goToPreviousWeek() {
+  animateWeekTransition('prev');
   state.currentWeek = getPreviousWeek(state.currentWeek.start);
   updateWeekDisplay();
   loadScheduleData();
+}
+
+// Touch swipe support
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', e => {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', e => {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+});
+
+function handleSwipe() {
+  const swipeThreshold = 50;
+  const swipeLength = touchEndX - touchStartX;
+  
+  if (Math.abs(swipeLength) > swipeThreshold) {
+    if (swipeLength > 0) {
+      goToPreviousWeek();
+    } else {
+      goToNextWeek();
+    }
+  }
 }
 
 function updateWeekDisplay() {
@@ -143,37 +200,45 @@ function updateWeekDisplay() {
     day: 'numeric', 
     month: 'long' 
   });
-  
+
   const endDate = state.currentWeek.end.toLocaleDateString('nl-NL', { 
     day: 'numeric', 
     month: 'long',
     year: 'numeric'
   });
-  
+
   currentWeekDisplay.textContent = `${startDate} - ${endDate}`;
 }
 
 // Schedule data loading
 async function loadScheduleData() {
   if (!state.calendarUrl) return;
-  
+
   state.isLoading = true;
   state.error = null;
   updateUIState();
-  
+
   try {
     const startDateStr = state.currentWeek.start.toISOString();
     const endDateStr = state.currentWeek.end.toISOString();
-    
-    const url = `/api/calendar?calendarUrl=${encodeURIComponent(state.calendarUrl)}&startDate=${startDateStr}&endDate=${endDateStr}`;
-    
+
+    const url = state.calendarUrl; // Fetch directly from the URL
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error('Failed to load schedule data');
     }
+
+    const icalData = await response.text();
+    const allEvents = parseICalData(icalData);
     
-    state.scheduleData = await response.json();
+    // Filter events for current week
+    state.scheduleData = allEvents.filter(event => {
+      const eventDate = new Date(event.start);
+      return eventDate >= state.currentWeek.start && eventDate <= state.currentWeek.end;
+    });
+    
     renderScheduleTable();
   } catch (error) {
     console.error('Error loading schedule data:', error);
@@ -204,44 +269,91 @@ function updateUIState() {
 function renderScheduleTable() {
   // Clear the table
   scheduleBody.innerHTML = '';
-  
+
   // Get the days of the week
   const daysOfWeek = getDaysOfWeek();
-  
+
   // Get time slots
   const timeSlots = getTimeSlots();
-  
+
   // Organize schedule data by day and time slot
   const scheduleBySlot = organizeScheduleBySlot(timeSlots, daysOfWeek);
-  
+
   // Render each time slot row
   timeSlots.forEach(timeSlot => {
     const row = document.createElement('tr');
-    
+
     // Add the time cell
     const timeCell = document.createElement('td');
     timeCell.className = 'time-cell';
     timeCell.textContent = timeSlot;
     row.appendChild(timeCell);
-    
+
     // Add cells for each day
     daysOfWeek.forEach(day => {
       const cell = document.createElement('td');
       const event = scheduleBySlot[timeSlot][day.name];
-      
+
       if (event) {
         cell.classList.add('has-event');
-        
+
         const eventBlock = document.createElement('div');
-        eventBlock.className = 'schedule-block';
-        eventBlock.textContent = `${event.subject} ${event.location} ${event.teacher}`;
+        const isPause = timeSlot === '10:30 - 10:50' || timeSlot === '11:50 - 12:10' || timeSlot === '13:10 - 13:30';
+        eventBlock.className = `schedule-block${isPause ? ' break' : ''}`;
         
+        if (isPause) {
+          event.subject = 'Pauze';
+        }
+        
+        const eventInfo = document.createElement('div');
+        eventInfo.className = 'event-info';
+        const displayText = [
+          event.subject,
+          event.location !== 'Geen locatie' ? event.location : '',
+          event.teacher !== 'Onbekend' ? event.teacher : ''
+        ].filter(Boolean).join(' ');
+        eventInfo.textContent = displayText;
+        
+        const noteToggle = document.createElement('button');
+        noteToggle.className = 'note-toggle';
+        noteToggle.innerHTML = '📝';
+        noteToggle.title = 'Toggle notities';
+        
+        const noteArea = document.createElement('textarea');
+        noteArea.className = 'note-area hidden';
+        noteArea.placeholder = 'Voeg notities toe...';
+        
+        // Load saved note if exists
+        const eventDateTime = event.start.toISOString();
+        const noteKey = `note_${eventDateTime}_${event.subject}`;
+        const toggleKey = `noteToggle_${eventDateTime}_${event.subject}`;
+        noteArea.value = localStorage.getItem(noteKey) || '';
+        
+        // Load saved toggle state
+        const isVisible = localStorage.getItem(toggleKey) === 'true';
+        if (isVisible) {
+          noteArea.classList.remove('hidden');
+        }
+        
+        noteToggle.addEventListener('click', () => {
+          const isNowVisible = noteArea.classList.toggle('hidden');
+          localStorage.setItem(toggleKey, !isNowVisible);
+        });
+        
+        noteArea.addEventListener('input', () => {
+          localStorage.setItem(noteKey, noteArea.value);
+        });
+        
+        eventBlock.appendChild(eventInfo);
+        eventBlock.appendChild(noteToggle);
+        eventBlock.appendChild(noteArea);
+
         cell.appendChild(eventBlock);
       }
-      
+
       row.appendChild(cell);
     });
-    
+
     scheduleBody.appendChild(row);
   });
 }
@@ -249,66 +361,86 @@ function renderScheduleTable() {
 function getDaysOfWeek() {
   const days = [];
   const startDate = new Date(state.currentWeek.start);
-  
+
   for (let i = 0; i < 5; i++) {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
-    
+
     days.push({
       name: date.toLocaleDateString('nl-NL', { weekday: 'long' }),
       date: date
     });
   }
-  
+
   return days;
 }
 
 function getTimeSlots() {
   return [
-    '08:30 - 09:15',
-    '09:15 - 10:00',
-    '10:00 - 10:45',
-    '11:00 - 11:45',
-    '11:45 - 12:30',
-    '13:00 - 13:45',
-    '13:45 - 14:30',
-    '14:30 - 15:15',
-    '15:30 - 16:15',
-    '16:15 - 17:00'
+    '08:30 - 09:00',
+    '09:00 - 09:30',
+    '09:30 - 10:00',
+    '10:00 - 10:30',
+    '10:30 - 10:50',
+    '10:50 - 11:20',
+    '11:20 - 11:50',
+    '11:50 - 12:10',
+    '12:10 - 12:40',
+    '12:40 - 13:10',
+    '13:10 - 13:30',
+    '13:30 - 14:00',
+    '14:00 - 14:30',
+    '14:30 - 15:00'
   ];
 }
 
 function organizeScheduleBySlot(timeSlots, days) {
   const result = {};
-  
+  const pauseTijden = ['10:30 - 10:50', '11:50 - 12:10', '13:10 - 13:30'];
+
   // Initialize the structure
   timeSlots.forEach(timeSlot => {
     result[timeSlot] = {};
     days.forEach(day => {
-      result[timeSlot][day.name] = undefined;
+      if (pauseTijden.includes(timeSlot)) {
+        // Voeg pauze toe voor alle dagen op pauzetijden
+        result[timeSlot][day.name] = {
+          subject: 'Pauze',
+          location: '',
+          teacher: '',
+          start: new Date(),
+          end: new Date()
+        };
+      } else {
+        result[timeSlot][day.name] = undefined;
+      }
     });
   });
-  
+
   // Fill in the events
   state.scheduleData.forEach(event => {
     const eventDate = new Date(event.start);
     const dayName = eventDate.toLocaleDateString('nl-NL', { weekday: 'long' });
-    
+
     // Format the time to match our time slots
     const eventTimeStart = formatTime(eventDate);
     const eventTimeEnd = formatTime(new Date(event.end));
-    
+
     // Find the matching time slot
     timeSlots.forEach(timeSlot => {
       const [slotStart, slotEnd] = timeSlot.split(' - ');
+
+      const [slotStartTime, slotEndTime] = timeSlot.split(' - ');
+      const eventStartTime = eventTimeStart;
+      const eventEndTime = eventTimeEnd;
       
-      // Simple check if event falls in this slot (could be improved)
-      if (eventTimeStart <= slotStart && eventTimeEnd >= slotEnd) {
+      // Check if event overlaps with this time slot
+      if (eventStartTime < slotEndTime && eventEndTime > slotStartTime) {
         result[timeSlot][dayName] = event;
       }
     });
   });
-  
+
   return result;
 }
 
@@ -319,6 +451,40 @@ function formatTime(date) {
     hour12: false
   });
 }
+
+function parseICalData(icalData) {
+  const events = [];
+  const lines = icalData.split('\n');
+  let currentEvent = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    if (line === 'BEGIN:VEVENT') {
+      currentEvent = {};
+    } else if (line === 'END:VEVENT' && currentEvent) {
+      events.push(currentEvent);
+      currentEvent = null;
+    } else if (currentEvent) {
+      if (line.startsWith('SUMMARY:')) {
+        currentEvent.subject = line.substring(8);
+      } else if (line.startsWith('LOCATION:')) {
+        currentEvent.location = line.substring(9) || 'Geen locatie';
+      } else if (line.startsWith('DESCRIPTION:')) {
+        const desc = line.substring(12);
+        const teacherMatch = desc.match(/Docent: ([^,]+)/i);
+        currentEvent.teacher = teacherMatch ? teacherMatch[1].trim() : 'Onbekend';
+      } else if (line.startsWith('DTSTART:')) {
+        currentEvent.start = new Date(line.substring(8).replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3T$4:$5:$6Z'));
+      } else if (line.startsWith('DTEND:')) {
+        currentEvent.end = new Date(line.substring(6).replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3T$4:$5:$6Z'));
+      }
+    }
+  }
+
+  return events;
+}
+
 
 // Initialize the app when the DOM is loaded
 document.addEventListener('DOMContentLoaded', initApp);
