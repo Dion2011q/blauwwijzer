@@ -67,19 +67,57 @@ header {
     align-items: center;
 }
 
-nav {
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navdiv {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.headerul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
     gap: 20px;
 }
 
-nav a {
+.headerlink {
     color: white;
     text-decoration: none;
+    font-weight: 500;
     font-size: 14px;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.5s ease;
 }
 
-nav a:hover {
-    text-decoration: underline;
+.headerlink:hover {
+    color: gray;
+    transition: color 0.2s ease;
+}
+
+
+
+.headerlink::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background-color: gray;
+    transition: width 0.3s ease;
+}
+
+.headerlink:hover::after {
+    width: 100%;
 }
 
 .logo {
