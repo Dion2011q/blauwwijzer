@@ -268,6 +268,10 @@ main {
     position: relative;
 }
 
+.current-time-cell.leswissel {
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
 .current-time-cell::after {
     content: '';
     position: absolute;
