@@ -414,27 +414,30 @@ function getDaysOfWeek() {
 
 function getTimeSlots() {
   return [
-    '08:30 - 09:00',
-    '09:00 - 09:30',
-    '09:30 - 10:00',
-    '10:00 - 10:30',
-    '10:30 - 10:50',
-    '10:50 - 11:20',
-    '11:20 - 11:50',
-    '11:50 - 12:10',
-    '12:10 - 12:40',
-    '12:40 - 13:10',
-    '13:10 - 13:30',
-    '13:30 - 14:00',
-    '14:00 - 14:30',
-    '14:30 - 15:00'
+    '08:30 - 08:59',
+    '09:00 - 09:29',
+    '09:30 - 09:59',
+    '10:00 - 10:29',
+    '10:50 - 11:19',
+    '11:20 - 11:49',
+    '12:10 - 12:39',
+    '12:40 - 13:09',
+    '13:30 - 13:59',
+    '14:00 - 14:29',
+    '14:30 - 14:59'
   ];
 }
 
 function organizeScheduleBySlot(timeSlots, days) {
   const result = {};
-  const pauseTijden = ['10:30 - 10:50', '11:50 - 12:10', '13:10 - 13:30'];
+  const pauseTijden = ['10:30 - 10:49', '11:50 - 12:09', '13:10 - 13:29'];
 
+  days.forEach(day => {
+    result[day] = { slots: [...timeSlots], pauses: [...pauseTijden] };
+  });
+
+  return result;
+}
   // Initialize the structure
   timeSlots.forEach(timeSlot => {
     result[timeSlot] = {};
