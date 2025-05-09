@@ -27,9 +27,9 @@ let state = {
 function initApp() {
   // Set up event listeners
   calendarSettingsBtn.addEventListener('click', openCalendarModal);
-  
+
   closeModalBtn.addEventListener('click', closeCalendarModal);
-  
+
   document.getElementById('calendar-url-form').addEventListener('submit', (e) => {
     e.preventDefault();
     saveCalendarUrl();
@@ -130,7 +130,7 @@ function getPreviousWeek(startDate) {
   start.setDate(start.getDate() - 7);
 
   const end = new Date(start);
-  end.setDate(start.getDate() + 4);
+  end.setDate(end.getDate() + 4);
   end.setHours(23, 59, 59, 999);
 
   return { start, end };
@@ -139,15 +139,15 @@ function getPreviousWeek(startDate) {
 function animateWeekTransition(direction) {
   const table = document.getElementById('schedule-table');
   if (!table) return;
-  
+
   // Reset transitie
   table.style.transition = 'none';
   table.style.transform = 'translateX(0)';
   table.offsetHeight;
-  
+
   // Stel start positie in
   table.style.transform = `translateX(${direction === 'next' ? '-' : ''}100%)`;
-  
+
   // Start animatie
   setTimeout(() => {
     table.style.transition = 'transform 0.3s ease-in-out';
@@ -185,7 +185,7 @@ document.addEventListener('touchend', e => {
 function handleSwipe() {
   const swipeThreshold = 50;
   const swipeLength = touchEndX - touchStartX;
-  
+
   if (Math.abs(swipeLength) > swipeThreshold) {
     if (swipeLength > 0) {
       goToPreviousWeek();
@@ -232,13 +232,13 @@ async function loadScheduleData() {
 
     const icalData = await response.text();
     const allEvents = parseICalData(icalData);
-    
+
     // Filter events for current week
     state.scheduleData = allEvents.filter(event => {
       const eventDate = new Date(event.start);
       return eventDate >= state.currentWeek.start && eventDate <= state.currentWeek.end;
     });
-    
+
     renderScheduleTable();
   } catch (error) {
     console.error('Error loading schedule data:', error);
@@ -266,12 +266,28 @@ function updateUIState() {
   }
 }
 
+function getCurrentTimeSlot(timeSlots) {
+  const now = new Date();
+  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  for (let i = 0; i < timeSlots.length; i++) {
+    const [start, end] = timeSlots[i].split(' - ');
+    if (currentTime >= start && currentTime <= end) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 function renderScheduleTable() {
   // Clear the table
   scheduleBody.innerHTML = '';
 
   // Get the days of the week
   const daysOfWeek = getDaysOfWeek();
+
+  // Get current day name
+  const currentDay = new Date().toLocaleDateString('nl-NL', { weekday: 'long' });
 
   // Get time slots
   const timeSlots = getTimeSlots();
@@ -280,8 +296,10 @@ function renderScheduleTable() {
   const scheduleBySlot = organizeScheduleBySlot(timeSlots, daysOfWeek);
 
   // Render each time slot row
-  timeSlots.forEach(timeSlot => {
+    timeSlots.forEach(timeSlot => {
     const row = document.createElement('tr');
+    const currentTimeSlot = getCurrentTimeSlot(timeSlots);
+    const currentDayName = new Date().toLocaleDateString('nl-NL', { weekday: 'long' });
 
     // Add the time cell
     const timeCell = document.createElement('td');
@@ -292,6 +310,15 @@ function renderScheduleTable() {
     // Add cells for each day
     daysOfWeek.forEach(day => {
       const cell = document.createElement('td');
+      if (day.name === currentDay) {
+        cell.classList.add('current-day-cell');
+      }
+
+      // Highlight only the current time slot cell for the current day
+      if (day.name === currentDay && timeSlots.indexOf(timeSlot) === currentTimeSlot) {
+        cell.classList.add('current-time-cell');
+      }
+
       const event = scheduleBySlot[timeSlot][day.name];
 
       if (event) {
@@ -300,11 +327,11 @@ function renderScheduleTable() {
         const eventBlock = document.createElement('div');
         const isPause = timeSlot === '10:30 - 10:50' || timeSlot === '11:50 - 12:10' || timeSlot === '13:10 - 13:30';
         eventBlock.className = `schedule-block${isPause ? ' break' : ''}`;
-        
+
         if (isPause) {
           event.subject = 'Pauze';
         }
-        
+
         const eventInfo = document.createElement('div');
         eventInfo.className = 'event-info';
         const displayText = [
@@ -313,37 +340,37 @@ function renderScheduleTable() {
           event.teacher !== 'Onbekend' ? event.teacher : ''
         ].filter(Boolean).join(' ');
         eventInfo.textContent = displayText;
-        
+
         const noteToggle = document.createElement('button');
         noteToggle.className = 'note-toggle';
         noteToggle.innerHTML = '📝';
         noteToggle.title = 'Toggle notities';
-        
+
         const noteArea = document.createElement('textarea');
         noteArea.className = 'note-area hidden';
         noteArea.placeholder = 'Voeg notities toe...';
-        
+
         // Load saved note if exists
         const eventDateTime = event.start.toISOString();
         const noteKey = `note_${eventDateTime}_${event.subject}`;
         const toggleKey = `noteToggle_${eventDateTime}_${event.subject}`;
         noteArea.value = localStorage.getItem(noteKey) || '';
-        
+
         // Load saved toggle state
         const isVisible = localStorage.getItem(toggleKey) === 'true';
         if (isVisible) {
           noteArea.classList.remove('hidden');
         }
-        
+
         noteToggle.addEventListener('click', () => {
           const isNowVisible = noteArea.classList.toggle('hidden');
           localStorage.setItem(toggleKey, !isNowVisible);
         });
-        
+
         noteArea.addEventListener('input', () => {
           localStorage.setItem(noteKey, noteArea.value);
         });
-        
+
         eventBlock.appendChild(eventInfo);
         eventBlock.appendChild(noteToggle);
         eventBlock.appendChild(noteArea);
@@ -433,7 +460,7 @@ function organizeScheduleBySlot(timeSlots, days) {
       const [slotStartTime, slotEndTime] = timeSlot.split(' - ');
       const eventStartTime = eventTimeStart;
       const eventEndTime = eventTimeEnd;
-      
+
       // Check if event overlaps with this time slot
       if (eventStartTime < slotEndTime && eventEndTime > slotStartTime) {
         result[timeSlot][dayName] = event;
