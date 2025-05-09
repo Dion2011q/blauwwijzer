@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlauwWijzer - Notes</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+    <header>
+        <div class="logo">blauwwijzer</div>
+        <nav class="nav">
+            <div class="navdiv">
+                <ul class="headerul">
+                    <li><a class="headerlink" href="index.html">Home</a></li>
+                    <li><a class="headerlink" href="todo.html">Todo</a></li>
+                    <li><a class="headerlink" href="notes.html">Notes</a></li>
+                    <li><a class="headerlink" href="#">lorum ipsum</a></li>
+                </ul>
+            </div>
+        </nav>
+        <button id="theme-toggle-btn">🌙</button>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="notes-container">
+                <h2>Notities</h2>
+                <div class="notes-form">
+                    <input type="text" id="note-title" placeholder="Titel...">
+                    <textarea id="note-content" placeholder="Schrijf je notitie..."></textarea>
+                    <button id="save-note">Opslaan</button>
+                </div>
+                <div id="notes-list"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/darkMode.js"></script>
+    <script src="js/notes.js"></script>
+</body>
+</html>
