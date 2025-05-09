@@ -318,14 +318,21 @@ function renderScheduleTable() {
       const now = new Date();
       const currentTimeStr = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
       const [slotStart, slotEnd] = timeSlot.split(' - ');
-      
+
       // Check if we're in the current week
       const isCurrentWeek = now >= state.currentWeek.start && now <= state.currentWeek.end;
+
+      // Check if we're at the end of a time slot (leswissel)
+      const isLeswissel = currentTimeStr >= slotEnd && currentTimeStr < timeSlots[timeSlots.indexOf(timeSlot) + 1]?.split(' - ')[0];
       
-      if (isCurrentWeek && currentTimeStr >= slotStart && currentTimeStr <= slotEnd) {
+      if (isCurrentWeek && ((currentTimeStr >= slotStart && currentTimeStr <= slotEnd) || isLeswissel)) {
         const currentDayName = now.toLocaleDateString('nl-NL', { weekday: 'long' });
         if (day.name === currentDayName) {
           cell.classList.add('current-time-cell');
+          // Als het leswissel is, markeer alleen het volgende tijdslot
+          if (isLeswissel) {
+            cell.classList.add('leswissel');
+          }
         }
       }
 
