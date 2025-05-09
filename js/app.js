@@ -314,9 +314,19 @@ function renderScheduleTable() {
         cell.classList.add('current-day-cell');
       }
 
-      // Highlight only the current time slot cell for the current day
-      if (day.name === currentDay && timeSlots.indexOf(timeSlot) === currentTimeSlot) {
-        cell.classList.add('current-time-cell');
+      // Highlight only the current time slot cell for the current day in current week
+      const now = new Date();
+      const currentTimeStr = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+      const [slotStart, slotEnd] = timeSlot.split(' - ');
+      
+      // Check if we're in the current week
+      const isCurrentWeek = now >= state.currentWeek.start && now <= state.currentWeek.end;
+      
+      if (isCurrentWeek && currentTimeStr >= slotStart && currentTimeStr <= slotEnd) {
+        const currentDayName = now.toLocaleDateString('nl-NL', { weekday: 'long' });
+        if (day.name === currentDayName) {
+          cell.classList.add('current-time-cell');
+        }
       }
 
       const event = scheduleBySlot[timeSlot][day.name];
