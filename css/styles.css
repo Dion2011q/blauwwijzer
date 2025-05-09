@@ -1,5 +1,16 @@
 :root {
     /* Light theme (default) */
+    --primary: #ffffff;
+    --primary-title: #000000
+    --primary-dark: #1E429F;
+    --primary-light: #0056d6;
+    --background: #FFFFFF;
+    --foreground: #1A202C;
+    --card-bg: #F7FAFC;
+    --border: #E2E8F0;
+    --muted: #718096;
+    --accent: #3C66F5;
+    --error: #E53E3E;
 }
 
 /* Dark theme colors */
