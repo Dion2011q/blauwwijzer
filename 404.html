@@ -6,6 +6,31 @@
     <title>BlauwWijzer</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+ <style>
+    main {
+      background-color: var(--primary);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 100px;
+    }
+    h1 {
+      font-size: 72px;
+      margin-bottom: 20px;
+      color: var(--primary-title);
+    }
+    p {
+      font-size: 24px;
+      color: var(--primary-title);
+    }
+    a {
+        text-decoration: none;
+        font-size: 20px;
+        color: var(--primary-title);
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
     <header>
@@ -21,35 +46,11 @@
             </div>        </nav>
         <button id="theme-toggle-btn">🌙</button>
     </header>
-  <style>
-    #h1 {
-    text-align: center;
-    font-size: 72px;
-    margin-bottom: 20px;
-    color: #333;
-    }
-    #p {
-    font-size: 24px;
-    color: #666;
-    text-align: center;
-    }
-    #a {
-    color: #007BFF;
-    text-decoration: none;
-    font-size: 20px;
-    text-align: center;
-    }
-    #a:hover {
-    text-decoration: underline;
-    text-align: center;
-    }
-  </style>
     <main>
         <div class="container">
-   <h1 id="h1">404</h1>
-  <p id="p">Oeps! Deze pagina bestaat niet.</p>
-  <a id="a" href="/">Ga terug naar de homepagina</a>
- 
+            <h1>404</h1>
+            <p>Oeps! Deze pagina bestaat niet.</p>
+            <a href="/">Ga terug naar de homepagina</a>
         </div>
     </main>
 
