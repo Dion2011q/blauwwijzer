@@ -1,13 +1,37 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>404 - Pagina niet gevonden</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlauwWijzer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 </head>
 <body>
-  <h1>404</h1>
+    <header>
+        <div class="logo">blauwwijzer</div>
+        <nav class="nav">
+            <div class="navdiv">
+                <ul class="headerul">
+                    <li><a class="headerlink" href="index.html">Home</a></li>
+                    <li><a class="headerlink" href="todo.html">Todo</a></li>
+                    <li><a class="headerlink" href="notes.html">Notes</a></li>
+                    <li><a class="headerlink" href="#">lorum ipsum</a></li>
+                </ul>
+            </div>        </nav>
+        <button id="theme-toggle-btn">🌙</button>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1>404</h1>
   <p>Oeps! Deze pagina bestaat niet.</p>
   <a href="/">Ga terug naar de homepagina</a>
+
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script src="js/darkMode.js"></script>
 </body>
 </html>
