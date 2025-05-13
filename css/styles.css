@@ -63,7 +63,7 @@ body {
 header {
     background-color: var(--header);
     color: white;
-    padding: 10px 0px;
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -78,7 +78,7 @@ header {
 .navdiv {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 0px;
 }
 
 .headerul {
