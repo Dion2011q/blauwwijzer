@@ -5,13 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlauwWijzer</title>
     <link rel="stylesheet" href="css/styles.css">
-    <script src="https://minnit.chat/js/embed.js?c=1740011833" defer></script>
-
     <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
     <link rel="apple-touch-icon" href="images/favicon/apple-touch-icon.png">
     <link rel="manifest" href="images/favicon/site.webmanifest">
+    <style>
+        /* Stel de iframe fullscreen in */
+        .chat-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1000;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Verberg scrollbalken */
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -24,16 +40,18 @@
                     <li><a class="headerlink" href="notes.html">Notes</a></li>
                     <li><a class="headerlink" href="chat.html">Chat</a></li>
                 </ul>
-            </div>        </nav>
+            </div>        
+        </nav>
         <button id="theme-toggle-btn">🌙</button>
     </header>
 
     <main>
-       <script src="https://minnit.chat/js/embed.js?c=1740011833" defer=""></script>
-<span style="color-scheme: unset; ruby-position: unset; writing-mode: unset; font-palette: unset; font-synthesis-small-caps: unset; font-synthesis-style: unset; font-synthesis-weight: unset; text-orientation: unset; text-rendering: unset; zoom: unset; -webkit-font-smoothing: unset; -webkit-locale: unset; -webkit-text-size-adjust: unset; -webkit-text-zoom: unset; text-autospace: unset; text-spacing-trim: unset; accent-color: unset; place-content: unset; place-items: unset; place-self: unset; alignment-baseline: unset; anchor-name: unset; animation-composition: unset; animation: unset; animation-range: unset; animation-timeline: unset; appearance: unset; aspect-ratio: unset; backdrop-filter: unset; backface-visibility: unset; background-blend-mode: unset; baseline-shift: unset; line-clamp: unset; block-step: unset; border-collapse: unset; box-sizing: unset; break-after: unset; break-before: unset; break-inside: unset; buffered-rendering: unset; caption-side: unset; caret-color: unset; clear: unset; clip-path: unset; clip-rule: unset; color-interpolation: unset; color-interpolation-filters: unset; column-count: unset; column-fill: unset; gap: unset; column-rule-color: unset; column-rule-style: unset; column-rule-width: unset; column-span: unset; column-width: unset; contain: unset; container-name: unset; container-type: unset; content: unset; content-visibility: unset; counter-increment: unset; counter-reset: unset; counter-set: unset; cursor: unset; cx: unset; cy: unset; d: unset; dominant-baseline: unset; empty-cells: unset; field-sizing: unset; fill: unset; fill-opacity: unset; fill-rule: unset; filter: unset; flex: unset; flex-flow: unset; float: unset; flood-color: unset; flood-opacity: unset; glyph-orientation-horizontal: unset; glyph-orientation-vertical: unset; grid: unset; grid-column-end: unset; grid-column-start: unset; grid-row-end: unset; grid-row-start: unset; hanging-punctuation: unset; hyphenate-character: unset; hyphens: unset; image-orientation: unset; image-rendering: unset; input-security: unset; isolation: unset; lighting-color: unset; line-break: unset; line-fit-edge: unset; list-style: unset; margin-trim: unset; marker: unset; mask: unset; mask-composite: unset; mask-mode: unset; mask-size: unset; mask-type: unset; masonry-auto-flow: unset; math-style: unset; object-fit: unset; object-position: unset; offset-anchor: unset; offset-distance: unset; offset-path: unset; offset-position: unset; offset-rotate: unset; order: unset; orphans: unset; outline-offset: unset; overflow-anchor: unset; overflow-wrap: unset; page: unset; paint-order: unset; perspective: unset; perspective-origin: unset; position-anchor: unset; position-try-fallbacks: unset; position-try-order: unset; print-color-adjust: unset; quotes: unset; r: unset; resize: unset; rotate: unset; ruby-align: unset; ruby-overhang: unset; rx: unset; ry: unset; scale: unset; scroll-behavior: unset; scroll-snap-align: unset; scroll-snap-stop: unset; scroll-snap-type: unset; scroll-timeline: unset; scrollbar-color: unset; scrollbar-gutter: unset; scrollbar-width: unset; shape-image-threshold: unset; shape-margin: unset; shape-outside: unset; shape-rendering: unset; speak-as: unset; stop-color: unset; stop-opacity: unset; stroke: unset; stroke-color: unset; stroke-dasharray: unset; stroke-dashoffset: unset; stroke-linecap: unset; stroke-linejoin: unset; stroke-miterlimit: unset; stroke-opacity: unset; stroke-width: unset; tab-size: unset; table-layout: unset; text-align-last: unset; text-anchor: unset; text-box: unset; text-combine-upright: unset; text-decoration-color: unset; text-decoration: unset; text-decoration-skip-ink: unset; text-decoration-style: unset; text-decoration-thickness: unset; text-emphasis-color: unset; text-emphasis-position: unset; text-emphasis-style: unset; text-group-align: unset; text-indent: unset; text-justify: unset; text-overflow: unset; text-shadow: unset; text-transform: unset; text-underline-offset: unset; text-underline-position: unset; text-wrap-style: unset; timeline-scope: unset; touch-action: unset; transform: unset; transform-box: unset; transform-origin: unset; transform-style: unset; transition: unset; translate: unset; vector-effect: unset; view-timeline: unset; view-transition-class: unset; view-transition-name: unset; widows: unset; will-change: unset; word-break: unset; x: unset; y: unset; -apple-color-filter: unset; -apple-pay-button-style: unset; -apple-pay-button-type: unset; -apple-visual-effect: unset; -internal-text-autosizing-status: unset; -webkit-backdrop-filter: unset; -webkit-background-clip: unset; -webkit-background-origin: unset; border-spacing: unset; -webkit-box-align: unset; -webkit-box-decoration-break: unset; -webkit-box-direction: unset; -webkit-box-flex: unset; -webkit-box-flex-group: unset; -webkit-box-lines: unset; -webkit-box-ordinal-group: unset; -webkit-box-orient: unset; -webkit-box-pack: unset; -webkit-box-reflect: unset; -webkit-box-shadow: unset; -webkit-column-axis: unset; -webkit-column-progression: unset; -webkit-cursor-visibility: unset; -webkit-font-size-delta: unset; -webkit-hyphenate-limit-after: unset; -webkit-hyphenate-limit-before: unset; -webkit-hyphenate-limit-lines: unset; -webkit-initial-letter: unset; -webkit-line-align: unset; -webkit-line-box-contain: unset; -webkit-line-clamp: unset; -webkit-line-grid: unset; -webkit-line-snap: unset; -webkit-marquee-direction: unset; -webkit-marquee-increment: unset; -webkit-marquee-repetition: unset; -webkit-marquee-speed: unset; -webkit-marquee-style: unset; -webkit-mask: unset; -webkit-mask-composite: unset; -webkit-mask-source-type: unset; -webkit-nbsp-mode: unset; -webkit-overflow-scrolling: unset; -webkit-rtl-ordering: unset; -webkit-ruby-position: unset; -webkit-tap-highlight-color: unset; -webkit-text-combine: unset; -webkit-text-decorations-in-effect: unset; -webkit-text-fill-color: unset; -webkit-text-security: unset; -webkit-text-stroke-color: unset; -webkit-text-stroke-width: unset; -webkit-touch-callout: unset; -webkit-user-drag: unset; -webkit-user-modify: unset; -webkit-user-select: unset; block-size: unset; border-block: unset; border-radius: unset; border-end-end-radius: unset; border-end-start-radius: unset; border-inline: unset; border-start-end-radius: unset; border-start-start-radius: unset; inset: unset; contain-intrinsic-block-size: unset; contain-intrinsic-size: unset; contain-intrinsic-inline-size: unset; inline-size: unset; inset-block: unset; inset-inline: unset; margin-block: unset; margin-inline: unset; max-block-size: unset; max-height: unset; max-inline-size: unset; max-width: unset; min-block-size: unset; min-height: unset; min-inline-size: unset; min-width: unset; overscroll-behavior-block: unset; overscroll-behavior-inline: unset; overscroll-behavior: unset; padding-block: unset; padding-inline: unset; scroll-margin-block: unset; scroll-margin: unset; scroll-margin-inline: unset; scroll-padding-block: unset; scroll-padding: unset; scroll-padding-inline: unset; display: inline; width: auto; height: auto; background: none; color: inherit; font-style: inherit; font-variant-caps: inherit; font-weight: inherit; font-width: inherit; font-size: inherit; font-family: inherit; font-size-adjust: inherit; font-kerning: inherit; font-variant-alternates: inherit; font-variant-ligatures: inherit; font-variant-numeric: inherit; font-variant-east-asian: inherit; font-variant-position: inherit; font-variant-emoji: inherit; font-feature-settings: inherit; font-optical-sizing: inherit; font-variation-settings: inherit; text-align: inherit; margin: 0px; padding: 0px; border: medium; box-shadow: none; outline: currentcolor; line-height: inherit; letter-spacing: normal; word-spacing: normal; vertical-align: baseline; overflow: visible; white-space: inherit; position: static; clip: auto; z-index: auto; visibility: inherit; opacity: 1; mix-blend-mode: normal; pointer-events: auto;" class="minnit-chat-sembed" data-chatname="https://organizations.minnit.chat/502862976964756/Main?embed" data-style="width:90%; height:500px; max-height:90vh;"><iframe src="https://organizations.minnit.chat/502862976964756/Main?embed&amp;embed&amp;nec=9298269" data-nec="9298269" style="border:none;width:90%; height:500px; max-height:90vh;" class="minnit-chat-iframe" allowtransparency="true" scrolling="no"></iframe></span>
-<p class="powered-by-minnit">
-  <a href="https://minnit.chat" target="_blank" onclick="window.open('https://minnit.chat', '_blank', 'noopener,noreferrer'); return false;"></a>
-</p> 
+        <!-- Voeg een iframe toe voor de Minnit Chat -->
+        <iframe 
+            class="chat-fullscreen" 
+            src="https://minnit.chat/?c=1740011833" 
+            allow="camera; microphone"
+        ></iframe>
     </main>
 
     <script src="js/app.js"></script>
