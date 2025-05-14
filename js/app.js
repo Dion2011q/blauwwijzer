@@ -194,7 +194,6 @@ function handleSwipe() {
     }
   }
 }
-
 function updateWeekDisplay() {
   const startDate = state.currentWeek.start.toLocaleDateString('nl-NL', { 
     day: 'numeric', 
@@ -207,7 +206,15 @@ function updateWeekDisplay() {
     year: 'numeric'
   });
 
-  currentWeekDisplay.textContent = `${startDate} - ${endDate}`;
+  // Controleer of de huidige week overeenkomt met de week van vandaag
+  const now = new Date();
+  const isCurrentWeek = now >= state.currentWeek.start && now <= state.currentWeek.end;
+
+  if (isCurrentWeek) {
+    currentWeekDisplay.textContent = "Deze week";
+  } else {
+    currentWeekDisplay.textContent = `${startDate} - ${endDate}`;
+  }
 }
 
 // Schedule data loading
