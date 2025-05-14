@@ -490,6 +490,21 @@ th {
     padding: 24px;
 }
 
+.modal-help {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.modal-help a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.modal-help a:hover {
+    text-decoration: underline;
+}
+
 .modal-content h2 {
     font-size: 1.5rem;
     color: var(--foreground);
@@ -558,6 +573,49 @@ th {
 /* Utility classes */
 .hidden {
     display: none;
+}
+
+/* Readme styles */
+.readme-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.readme-content h1 {
+    color: var(--primary-title);
+    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+}
+
+.readme-content h2 {
+    color: var(--primary-title);
+    margin: 2rem 0 1rem;
+    font-size: 1.8rem;
+}
+
+.readme-content p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.readme-content ul, 
+.readme-content ol {
+    margin: 1rem 0;
+    padding-left: 2rem;
+}
+
+.readme-content li {
+    margin-bottom: 0.5rem;
+}
+
+.readme-content a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.readme-content a:hover {
+    text-decoration: underline;
 }
 
 /* Todo styles */
