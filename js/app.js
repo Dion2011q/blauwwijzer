@@ -25,10 +25,18 @@ let state = {
 
 // Initialize the app
 function initApp() {
+  // Show modal immediately if no calendar URL is set
+  if (!localStorage.getItem('calendarUrl')) {
+    openCalendarModal();
+    closeModalBtn.style.display = 'none'; // Hide close button
+  }
+
   // Set up event listeners
   calendarSettingsBtn.addEventListener('click', openCalendarModal);
-
-  closeModalBtn.addEventListener('click', closeCalendarModal);
+  closeModalBtn.addEventListener('click', () => {
+    calendarModal.classList.remove('active');
+    closeModalBtn.style.display = 'block'; // Reset display of close button
+  });
 
   document.getElementById('calendar-url-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -331,7 +339,7 @@ function renderScheduleTable() {
 
       // Check if we're at the end of a time slot (leswissel)
       const isLeswissel = currentTimeStr >= slotEnd && currentTimeStr < timeSlots[timeSlots.indexOf(timeSlot) + 1]?.split(' - ')[0];
-      
+
       if (isCurrentWeek && ((currentTimeStr >= slotStart && currentTimeStr <= slotEnd) || isLeswissel)) {
         const currentDayName = now.toLocaleDateString('nl-NL', { weekday: 'long' });
         if (day.name === currentDayName) {
