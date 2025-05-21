@@ -30,6 +30,7 @@
         </nav>
         <button id="theme-toggle-btn"></button>
     </header>
+    <div id="schedule-switcher"></div>
 
     <main>
         <div class="container">
@@ -72,8 +73,9 @@
 
     <div id="calendar-modal" class="modal">
         <div class="modal-content">
-            <h2>Kalender URL</h2>
+            <h2>Welkom bij BlauwWijzer</h2>
             <form id="calendar-url-form">
+              <input type="text" id="name-input" placeholder="Voer je naam in" required />
               <input type="url" id="calendar-url-input" placeholder="Voer je SomToday/Magister agenda URL in (ical)" required />
               <button type="submit" id="save-calendar-btn" class="btn">Opslaan</button>
             </form>
