@@ -38,12 +38,6 @@ function initApp() {
     openCalendarModal();
     closeModalBtn.style.display = 'none'; // Hide close button
   }
-
-    // Create schedule switcher element
-    const header = document.querySelector('header');
-    const scheduleSwitcher = document.createElement('div');
-    scheduleSwitcher.id = 'schedule-switcher';
-    header.parentNode.insertBefore(scheduleSwitcher, header.nextSibling);
   
   // Set up event listeners
   calendarSettingsBtn.addEventListener('click', openCalendarModal);
@@ -301,11 +295,19 @@ function updateWeekDisplay() {
 
 // Schedule data loading
 async function loadScheduleData() {
-  if (!state.calendarUrl) return;
+  const activeSchedule = state.schedules[state.activeScheduleIndex];
+  if (!activeSchedule) {
+    state.error = "Geen rooster geselecteerd";
+    state.isLoading = false;
+    updateUIState();
+    updateScheduleSwitcher();
+    return;
+  }
 
   state.isLoading = true;
   state.error = null;
   updateUIState();
+  updateScheduleSwitcher();
 
   try {
     const activeSchedule = state.schedules[state.activeScheduleIndex];
