@@ -67,6 +67,57 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+#schedule-switcher {
+    width: 100%;
+    padding: 10px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background-color: var(--background);
+    border-bottom: 1px solid var(--border);
+}
+
+.schedule-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.schedule-add-btn, .schedule-switch-btn {
+    background: none;
+    border: none;
+    color: var(--foreground);
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.schedule-delete-btn {
+    background: none;
+    border: none;
+    color: var(--error);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 2px 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.schedule-delete-btn:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+.schedule-add-btn:hover, .schedule-switch-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.schedule-switch-btn.active {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .nav {
@@ -528,6 +579,7 @@ th {
     color: var(--foreground);
 }
 
+#name-input,
 #calendar-url-input {
     width: 100%;
     padding: 12px 16px;
