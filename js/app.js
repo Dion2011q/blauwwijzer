@@ -1,5 +1,4 @@
 // DOM Elements
-const themeToggleBtn = document.getElementById('theme-toggle-btn');
 const calendarSettingsBtn = document.getElementById('calendar-settings-btn');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const saveCalendarBtn = document.getElementById('save-calendar-btn');
@@ -16,7 +15,10 @@ const calendarError = document.getElementById('calendar-error');
 // Application state
 let state = {
   darkMode: false,
-  calendarUrl: localStorage.getItem('calendarUrl') || '',
+  schedules: JSON.parse(localStorage.getItem('schedules')) || [],
+  activeScheduleIndex: parseInt(localStorage.getItem('activeScheduleIndex')) || 0,
+  calendarUrl: localStorage.getItem('calendarUrl') || '', // Remove after schedules are implemented
+  userName: localStorage.getItem('userName') || '', // Remove after schedules are implemented
   currentWeek: getCurrentWeek(),
   scheduleData: [],
   isLoading: false,
@@ -25,12 +27,24 @@ let state = {
 
 // Initialize the app
 function initApp() {
+  // Update title with username if available
+  const userName = localStorage.getItem('userName');
+  if (userName) {
+    document.getElementById('weekrooster-title').textContent = `${userName}'s weekrooster`;
+  }
+
   // Show modal immediately if no calendar URL is set
   if (!localStorage.getItem('calendarUrl')) {
     openCalendarModal();
     closeModalBtn.style.display = 'none'; // Hide close button
   }
 
+    // Create schedule switcher element
+    const header = document.querySelector('header');
+    const scheduleSwitcher = document.createElement('div');
+    scheduleSwitcher.id = 'schedule-switcher';
+    header.parentNode.insertBefore(scheduleSwitcher, header.nextSibling);
+  
   // Set up event listeners
   calendarSettingsBtn.addEventListener('click', openCalendarModal);
   closeModalBtn.addEventListener('click', () => {
@@ -68,6 +82,8 @@ function initApp() {
     // Show calendar modal if no URL is set
     openCalendarModal();
   }
+    // Initialize schedule switcher
+    updateScheduleSwitcher();
 
   // Update the week display
   updateWeekDisplay();
@@ -87,12 +103,70 @@ function closeCalendarModal() {
 
 function saveCalendarUrl() {
   const url = calendarUrlInput.value.trim();
-  if (url) {
-    state.calendarUrl = url;
-    localStorage.setItem('calendarUrl', url);
+  const name = document.getElementById('name-input').value.trim();
+  if (url && name) {
+    const newSchedule = { name, url };
+    state.schedules.push(newSchedule);
+    state.activeScheduleIndex = state.schedules.length - 1;
+    localStorage.setItem('schedules', JSON.stringify(state.schedules));
+    localStorage.setItem('activeScheduleIndex', state.activeScheduleIndex);
+    updateScheduleSwitcher();
     closeCalendarModal();
     loadScheduleData();
   }
+}
+
+function updateScheduleSwitcher() {
+  const switcher = document.getElementById('schedule-switcher');
+  switcher.innerHTML = '';
+
+  const addButton = document.createElement('button');
+  addButton.innerHTML = '+ Voeg rooster toe';
+  addButton.className = 'schedule-add-btn';
+  addButton.onclick = openCalendarModal;
+  switcher.appendChild(addButton);
+
+  state.schedules.forEach((schedule, index) => {
+    const scheduleContainer = document.createElement('div');
+    scheduleContainer.className = 'schedule-container';
+
+    const button = document.createElement('button');
+    button.textContent = schedule.name;
+    button.className = `schedule-switch-btn ${index === state.activeScheduleIndex ? 'active' : ''}`;
+    button.onclick = () => switchSchedule(index);
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.innerHTML = '×';
+    deleteButton.className = 'schedule-delete-btn';
+    deleteButton.onclick = (e) => {
+      e.stopPropagation();
+      if (confirm(`Weet je zeker dat je het rooster van ${schedule.name} wilt verwijderen?`)) {
+        state.schedules.splice(index, 1);
+        if (state.activeScheduleIndex === index) {
+          state.activeScheduleIndex = state.schedules.length > 0 ? 0 : -1;
+        } else if (state.activeScheduleIndex > index) {
+          state.activeScheduleIndex--;
+        }
+        localStorage.setItem('schedules', JSON.stringify(state.schedules));
+        localStorage.setItem('activeScheduleIndex', state.activeScheduleIndex);
+        updateScheduleSwitcher();
+        loadScheduleData();
+      }
+    };
+
+    scheduleContainer.appendChild(button);
+    scheduleContainer.appendChild(deleteButton);
+    switcher.appendChild(scheduleContainer);
+  });
+}
+
+function switchSchedule(index) {
+  state.activeScheduleIndex = index;
+  localStorage.setItem('activeScheduleIndex', index);
+  updateScheduleSwitcher();
+  loadScheduleData();
+  const schedule = state.schedules[index];
+  document.getElementById('weekrooster-title').textContent = `${schedule.name}'s weekrooster`;
 }
 
 // Load saved calendar URL on startup
@@ -234,10 +308,16 @@ async function loadScheduleData() {
   updateUIState();
 
   try {
+    const activeSchedule = state.schedules[state.activeScheduleIndex];
+    if (!activeSchedule) {
+      console.warn('No active schedule selected.');
+      return;
+    }
+
     const startDateStr = state.currentWeek.start.toISOString();
     const endDateStr = state.currentWeek.end.toISOString();
 
-    const url = state.calendarUrl; // Fetch directly from the URL
+    const url = activeSchedule.url; // Fetch from the active schedule
 
     const response = await fetch(url);
 
@@ -265,6 +345,7 @@ async function loadScheduleData() {
 }
 
 // UI rendering functions
+// This line sets up the application state.
 function updateUIState() {
   if (state.isLoading) {
     loadingIndicator.classList.remove('hidden');
