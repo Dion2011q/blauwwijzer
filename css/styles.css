@@ -127,19 +127,19 @@ header {
 }
 
 .navdiv {
-    display: flex;
-    align-items: center;
-    gap: 0px;
+  display: flex;
+  justify-content: center; /* Centraal in de navdiv */
 }
 
 .headerul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    gap: 20px;
+  display: flex;
+  gap: 1.5rem; /* optioneel: ruimte tussen de links */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  justify-content: center; /* Centraal in de ul */
+  align-items: center;
 }
-
 .headerlink {
     color: white;
     text-decoration: none;
