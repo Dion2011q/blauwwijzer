@@ -127,8 +127,9 @@ header {
 }
 
 .navdiv {
-  display: flex;
-  justify-content: center; /* Centraal in de navdiv */
+    aling-items: center;
+    display: flex;
+    justify-content: center; /* Centraal in de navdiv */
 }
 
 .headerul {
