@@ -254,19 +254,23 @@ function goToPreviousWeek() {
 let touchStartX = 0;
 let touchEndX = 0;
 
-document.addEventListener('touchstart', e => {
-  touchStartX = e.changedTouches[0].screenX;
-});
+// Gebruik de bestaande scheduleTable variabele
+if (scheduleTable) {
+  scheduleTable.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+  });
 
-document.addEventListener('touchend', e => {
-  touchEndX = e.changedTouches[0].screenX;
-  handleSwipe();
-});
+  scheduleTable.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  });
+}
 
 function handleSwipe() {
-  const swipeThreshold = 50;
+  const swipeThreshold = 100; // Verhoog de drempelwaarde
   const swipeLength = touchEndX - touchStartX;
-
+  
+  // Controleer of de swipe lang genoeg is
   if (Math.abs(swipeLength) > swipeThreshold) {
     if (swipeLength > 0) {
       goToPreviousWeek();
