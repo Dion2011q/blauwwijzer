@@ -34,7 +34,7 @@ function initApp() {
   }
 
   // Show modal immediately if no calendar URL is set
-  if (!localStorage.getItem('calendarUrl')) {
+  if (!state.schedules || state.schedules.length === 0) {
     openCalendarModal();
     closeModalBtn.style.display = 'none'; // Hide close button
   }
@@ -66,14 +66,19 @@ function initApp() {
 
   // Set up media query listener for theme changes
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  mediaQuery.addEventListener('change', handleSystemThemeChange);
+  mediaQuery.addEventListener('change', (e) => {
+    if (localStorage.getItem('darkMode') === null) {
+      state.darkMode = e.matches;
+      document.body.classList.toggle('dark-theme', state.darkMode);
+      themeToggleBtn.textContent = state.darkMode ? '🌙' : '☀️';
+    }
+  });
 
-  // If we have a calendar URL, load the schedule
-  if (state.calendarUrl) {
-    calendarUrlInput.value = state.calendarUrl;
+  // Load schedule data if we have schedules
+  if (state.schedules && state.schedules.length > 0) {
     loadScheduleData();
   } else {
-    // Show calendar modal if no URL is set
+    // Show calendar modal if no schedules are set
     openCalendarModal();
   }
     // Initialize schedule switcher
@@ -300,9 +305,12 @@ async function loadScheduleData() {
     state.error = "Geen rooster geselecteerd";
     state.isLoading = false;
     updateUIState();
-    updateScheduleSwitcher();
+  updateScheduleSwitcher();
     return;
   }
+
+  // Update title with schedule name
+  document.getElementById('weekrooster-title').textContent = `${activeSchedule.name}'s weekrooster`;
 
   state.isLoading = true;
   state.error = null;
