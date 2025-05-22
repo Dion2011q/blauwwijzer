@@ -65,7 +65,7 @@ header {
     color: white;
     padding: 10px 20px;
     display: flex;
-    justify-content: space-relative;
+    justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
 }
