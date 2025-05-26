@@ -38,7 +38,7 @@ function initApp() {
     openCalendarModal();
     closeModalBtn.style.display = 'none'; // Hide close button
   }
-  
+
   // Set up event listeners
   calendarSettingsBtn.addEventListener('click', openCalendarModal);
   closeModalBtn.addEventListener('click', () => {
@@ -133,7 +133,7 @@ function updateScheduleSwitcher() {
     button.textContent = schedule.name;
     button.className = `schedule-switch-btn ${index === state.activeScheduleIndex ? 'active' : ''}`;
     button.onclick = () => switchSchedule(index);
-    
+
     const deleteButton = document.createElement('button');
     deleteButton.innerHTML = '×';
     deleteButton.className = 'schedule-delete-btn';
@@ -269,7 +269,7 @@ if (scheduleTable) {
 function handleSwipe() {
   const swipeThreshold = 100; // Verhoog de drempelwaarde
   const swipeLength = touchEndX - touchStartX;
-  
+
   // Controleer of de swipe lang genoeg is
   if (Math.abs(swipeLength) > swipeThreshold) {
     if (swipeLength > 0) {
@@ -309,7 +309,7 @@ async function loadScheduleData() {
     state.error = "Geen rooster geselecteerd";
     state.isLoading = false;
     updateUIState();
-  updateScheduleSwitcher();
+    updateScheduleSwitcher();
     return;
   }
 
@@ -322,24 +322,50 @@ async function loadScheduleData() {
   updateScheduleSwitcher();
 
   try {
-    const activeSchedule = state.schedules[state.activeScheduleIndex];
-    if (!activeSchedule) {
-      console.warn('No active schedule selected.');
-      return;
+    console.log('Attempting to load calendar from:', activeSchedule.url);
+
+    let icalData;
+    let url = activeSchedule.url;
+
+    // Convert Google Calendar sharing URL to iCal format if needed
+    if (url.includes('calendar.google.com/calendar/u/') && url.includes('cid=')) {
+      const cidMatch = url.match(/cid=([^&]+)/);
+      if (cidMatch) {
+        const decodedCid = decodeURIComponent(cidMatch[1]);
+        url = `https://calendar.google.com/calendar/ical/${decodedCid}/public/basic.ics`;
+      }
     }
 
-    const startDateStr = state.currentWeek.start.toISOString();
-    const endDateStr = state.currentWeek.end.toISOString();
-
-    const url = activeSchedule.url; // Fetch from the active schedule
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error('Failed to load schedule data');
+    try {
+      // Probeer eerst direct te laden
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Direct fetch failed');
+      }
+      icalData = await response.text();
+    } catch (directError) {
+      console.log('Direct fetch failed, trying with CORS proxy:', directError.message);
+      
+      // Probeer met CORS proxy
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      try {
+        const proxyResponse = await fetch(proxyUrl);
+        if (!proxyResponse.ok) {
+          throw new Error('Proxy fetch failed');
+        }
+        icalData = await proxyResponse.text();
+      } catch (proxyError) {
+        // Laatste poging met allorigins
+        const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        const allOriginsResponse = await fetch(allOriginsUrl);
+        if (!allOriginsResponse.ok) {
+          throw new Error('Failed to load calendar data via any method');
+        }
+        const allOriginsData = await allOriginsResponse.json();
+        icalData = allOriginsData.contents;
+      }
     }
 
-    const icalData = await response.text();
     const allEvents = parseICalData(icalData);
 
     // Filter events for current week
@@ -351,7 +377,7 @@ async function loadScheduleData() {
     renderScheduleTable();
   } catch (error) {
     console.error('Error loading schedule data:', error);
-    state.error = error.message;
+    state.error = `Fout bij laden rooster: ${error.message}`;
   } finally {
     state.isLoading = false;
     updateUIState();
@@ -378,11 +404,17 @@ function updateUIState() {
 
 function getCurrentTimeSlot(timeSlots) {
   const now = new Date();
-  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
 
   for (let i = 0; i < timeSlots.length; i++) {
     const [start, end] = timeSlots[i].split(' - ');
-    if (currentTime >= start && currentTime <= end) {
+    const [startHour, startMin] = start.split(':').map(Number);
+    const [endHour, endMin] = end.split(':').map(Number);
+    
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    
+    if (currentTimeMinutes >= startMinutes && currentTimeMinutes <= endMinutes) {
       return i;
     }
   }
@@ -418,92 +450,83 @@ function renderScheduleTable() {
     row.appendChild(timeCell);
 
     // Add cells for each day
-    daysOfWeek.forEach(day => {
-      const cell = document.createElement('td');
-      if (day.name === currentDay) {
-        cell.classList.add('current-day-cell');
-      }
+      daysOfWeek.forEach(day => {
+        const cell = document.createElement('td');
+        if (day.name === currentDay) {
+          cell.classList.add('current-day-cell');
+        }
 
-      // Highlight only the current time slot cell for the current day in current week
-      const now = new Date();
-      const currentTimeStr = now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-      const [slotStart, slotEnd] = timeSlot.split(' - ');
-
-      // Check if we're in the current week
-      const isCurrentWeek = now >= state.currentWeek.start && now <= state.currentWeek.end;
-
-      // Check if we're at the end of a time slot (leswissel)
-      const isLeswissel = currentTimeStr >= slotEnd && currentTimeStr < timeSlots[timeSlots.indexOf(timeSlot) + 1]?.split(' - ')[0];
-
-      if (isCurrentWeek && ((currentTimeStr >= slotStart && currentTimeStr <= slotEnd) || isLeswissel)) {
+        // Highlight current time slot only for current day and current week
+        const now = new Date();
+        const isCurrentWeek = now >= state.currentWeek.start && now <= state.currentWeek.end;
         const currentDayName = now.toLocaleDateString('nl-NL', { weekday: 'long' });
-        if (day.name === currentDayName) {
-          cell.classList.add('current-time-cell');
-          // Als het leswissel is, markeer alleen het volgende tijdslot
-          if (isLeswissel) {
-            cell.classList.add('leswissel');
+        
+        if (isCurrentWeek && day.name === currentDayName) {
+          const currentTimeSlotIndex = getCurrentTimeSlot(timeSlots);
+          const currentSlotIndex = timeSlots.indexOf(timeSlot);
+          
+          if (currentTimeSlotIndex === currentSlotIndex) {
+            cell.classList.add('current-time-cell');
           }
         }
-      }
 
-      const event = scheduleBySlot[timeSlot][day.name];
+        const event = scheduleBySlot[timeSlot][day.name];
 
-      if (event) {
-        cell.classList.add('has-event');
+        if (event) {
+          cell.classList.add('has-event');
 
-        const eventBlock = document.createElement('div');
-        const isPause = timeSlot === '10:30 - 10:50' || timeSlot === '11:50 - 12:10' || timeSlot === '13:10 - 13:30';
-        eventBlock.className = `schedule-block${isPause ? ' break' : ''}`;
+          const eventBlock = document.createElement('div');
+          const isBreak = event.isBreak || isDetectedBreak(timeSlot);
+          eventBlock.className = `schedule-block${isBreak ? ' break' : ''}`;
 
-        if (isPause) {
-          event.subject = 'Pauze';
+          // Only add content for actual events, not breaks
+          if (!isBreak) {
+            const eventInfo = document.createElement('div');
+            eventInfo.className = 'event-info';
+            const displayText = [
+              event.subject,
+              event.location !== 'Geen locatie' ? event.location : '',
+              event.teacher !== 'Onbekend' ? event.teacher : ''
+            ].filter(Boolean).join(' ');
+            eventInfo.textContent = displayText;
+
+            const noteToggle = document.createElement('button');
+            noteToggle.className = 'note-toggle';
+            noteToggle.innerHTML = '📝';
+            noteToggle.title = 'Toggle notities';
+
+            const noteArea = document.createElement('textarea');
+            noteArea.className = 'note-area hidden';
+            noteArea.placeholder = 'Voeg notities toe...';
+
+            // Load saved note if exists
+            const eventDateTime = event.start.toISOString();
+            const noteKey = `note_${eventDateTime}_${event.subject}`;
+            const toggleKey = `noteToggle_${eventDateTime}_${event.subject}`;
+            noteArea.value = localStorage.getItem(noteKey) || '';
+
+            // Load saved toggle state
+            const isVisible = localStorage.getItem(toggleKey) === 'true';
+            if (isVisible) {
+              noteArea.classList.remove('hidden');
+            }
+
+            noteToggle.addEventListener('click', () => {
+              const isNowVisible = noteArea.classList.toggle('hidden');
+              localStorage.setItem(toggleKey, !isNowVisible);
+            });
+
+            noteArea.addEventListener('input', () => {
+              localStorage.setItem(noteKey, noteArea.value);
+            });
+
+            eventBlock.appendChild(eventInfo);
+            eventBlock.appendChild(noteToggle);
+            eventBlock.appendChild(noteArea);
+          }
+
+          cell.appendChild(eventBlock);
         }
-
-        const eventInfo = document.createElement('div');
-        eventInfo.className = 'event-info';
-        const displayText = [
-          event.subject,
-          event.location !== 'Geen locatie' ? event.location : '',
-          event.teacher !== 'Onbekend' ? event.teacher : ''
-        ].filter(Boolean).join(' ');
-        eventInfo.textContent = displayText;
-
-        const noteToggle = document.createElement('button');
-        noteToggle.className = 'note-toggle';
-        noteToggle.innerHTML = '📝';
-        noteToggle.title = 'Toggle notities';
-
-        const noteArea = document.createElement('textarea');
-        noteArea.className = 'note-area hidden';
-        noteArea.placeholder = 'Voeg notities toe...';
-
-        // Load saved note if exists
-        const eventDateTime = event.start.toISOString();
-        const noteKey = `note_${eventDateTime}_${event.subject}`;
-        const toggleKey = `noteToggle_${eventDateTime}_${event.subject}`;
-        noteArea.value = localStorage.getItem(noteKey) || '';
-
-        // Load saved toggle state
-        const isVisible = localStorage.getItem(toggleKey) === 'true';
-        if (isVisible) {
-          noteArea.classList.remove('hidden');
-        }
-
-        noteToggle.addEventListener('click', () => {
-          const isNowVisible = noteArea.classList.toggle('hidden');
-          localStorage.setItem(toggleKey, !isNowVisible);
-        });
-
-        noteArea.addEventListener('input', () => {
-          localStorage.setItem(noteKey, noteArea.value);
-        });
-
-        eventBlock.appendChild(eventInfo);
-        eventBlock.appendChild(noteToggle);
-        eventBlock.appendChild(noteArea);
-
-        cell.appendChild(eventBlock);
-      }
 
       row.appendChild(cell);
     });
@@ -530,67 +553,120 @@ function getDaysOfWeek() {
 }
 
 function getTimeSlots() {
-  return [
-    '08:30 - 09:00',
-    '09:00 - 09:30',
-    '09:30 - 10:00',
-    '10:00 - 10:30',
-    '10:30 - 10:50',
-    '10:50 - 11:20',
-    '11:20 - 11:50',
-    '11:50 - 12:10',
-    '12:10 - 12:40',
-    '12:40 - 13:10',
-    '13:10 - 13:30',
-    '13:30 - 14:00',
-    '14:00 - 14:30',
-    '14:30 - 15:00'
-  ];
+  if (!state.scheduleData || state.scheduleData.length === 0) {
+    // Fallback naar standaard tijdslots als er geen data is
+    return [
+      '08:30 - 09:00',
+      '09:00 - 09:30',
+      '09:30 - 10:00',
+      '10:00 - 10:30',
+      '10:30 - 10:50',
+      '10:50 - 11:20',
+      '11:20 - 11:50',
+      '11:50 - 12:10',
+      '12:10 - 12:40',
+      '12:40 - 13:10',
+      '13:10 - 13:30',
+      '13:30 - 14:00',
+      '14:00 - 14:30',
+      '14:30 - 15:00'
+    ];
+  }
+
+  // Verzamel alle tijdspunten (start en eind) van events
+  const timePoints = new Set();
+  
+  state.scheduleData.forEach(event => {
+    const startTime = formatTime(new Date(event.start));
+    const endTime = formatTime(new Date(event.end));
+    timePoints.add(startTime);
+    timePoints.add(endTime);
+  });
+
+  // Sorteer tijdspunten
+  const sortedTimes = Array.from(timePoints).sort((a, b) => {
+    const [aHour, aMin] = a.split(':').map(Number);
+    const [bHour, bMin] = b.split(':').map(Number);
+    const aMinutes = aHour * 60 + aMin;
+    const bMinutes = bHour * 60 + bMin;
+    return aMinutes - bMinutes;
+  });
+
+  // Genereer tijdslots van elkaar opeenvolgende tijdspunten
+  const timeSlots = [];
+  for (let i = 0; i < sortedTimes.length - 1; i++) {
+    const startTime = sortedTimes[i];
+    const endTime = sortedTimes[i + 1];
+    
+    // Controleer of dit tijdslot minimaal 5 minuten is
+    const gap = getTimeDifference(startTime, endTime);
+    if (gap >= 5) {
+      timeSlots.push(`${startTime} - ${endTime}`);
+    }
+  }
+
+  return timeSlots;
 }
 
 function organizeScheduleBySlot(timeSlots, days) {
   const result = {};
-  const pauseTijden = ['10:30 - 10:50', '11:50 - 12:10', '13:10 - 13:30'];
 
   // Initialize the structure
   timeSlots.forEach(timeSlot => {
     result[timeSlot] = {};
     days.forEach(day => {
-      if (pauseTijden.includes(timeSlot)) {
-        // Voeg pauze toe voor alle dagen op pauzetijden
-        result[timeSlot][day.name] = {
-          subject: 'Pauze',
-          location: '',
-          teacher: '',
-          start: new Date(),
-          end: new Date()
-        };
-      } else {
-        result[timeSlot][day.name] = undefined;
+      result[timeSlot][day.name] = undefined;
+    });
+  });
+
+  // Fill in the events - improved matching for lessons that span multiple slots
+  state.scheduleData.forEach(event => {
+    const eventDate = new Date(event.start);
+    const eventEndDate = new Date(event.end);
+    const dayName = eventDate.toLocaleDateString('nl-NL', { weekday: 'long' });
+
+    const eventStartTime = formatTime(eventDate);
+    const eventEndTime = formatTime(eventEndDate);
+    
+    // Convert to minutes for easier comparison
+    const [eventStartHour, eventStartMin] = eventStartTime.split(':').map(Number);
+    const [eventEndHour, eventEndMin] = eventEndTime.split(':').map(Number);
+    const eventStartMinutes = eventStartHour * 60 + eventStartMin;
+    const eventEndMinutes = eventEndHour * 60 + eventEndMin;
+
+    // Check each time slot to see if this event overlaps with it
+    timeSlots.forEach(timeSlot => {
+      const [slotStart, slotEnd] = timeSlot.split(' - ');
+      const [slotStartHour, slotStartMin] = slotStart.split(':').map(Number);
+      const [slotEndHour, slotEndMin] = slotEnd.split(':').map(Number);
+      const slotStartMinutes = slotStartHour * 60 + slotStartMin;
+      const slotEndMinutes = slotEndHour * 60 + slotEndMin;
+
+      // Check if event overlaps with this time slot
+      const eventOverlapsSlot = (
+        (eventStartMinutes <= slotStartMinutes && eventEndMinutes > slotStartMinutes) ||
+        (eventStartMinutes < slotEndMinutes && eventEndMinutes >= slotEndMinutes) ||
+        (eventStartMinutes >= slotStartMinutes && eventEndMinutes <= slotEndMinutes)
+      );
+
+      if (eventOverlapsSlot) {
+        result[timeSlot][dayName] = event;
       }
     });
   });
 
-  // Fill in the events
-  state.scheduleData.forEach(event => {
-    const eventDate = new Date(event.start);
-    const dayName = eventDate.toLocaleDateString('nl-NL', { weekday: 'long' });
-
-    // Format the time to match our time slots
-    const eventTimeStart = formatTime(eventDate);
-    const eventTimeEnd = formatTime(new Date(event.end));
-
-    // Find the matching time slot
-    timeSlots.forEach(timeSlot => {
-      const [slotStart, slotEnd] = timeSlot.split(' - ');
-
-      const [slotStartTime, slotEndTime] = timeSlot.split(' - ');
-      const eventStartTime = eventTimeStart;
-      const eventEndTime = eventTimeEnd;
-
-      // Check if event overlaps with this time slot
-      if (eventStartTime < slotEndTime && eventEndTime > slotStartTime) {
-        result[timeSlot][dayName] = event;
+  // Add breaks for detected break slots (per day basis)
+  timeSlots.forEach(timeSlot => {
+    days.forEach(day => {
+      if (!result[timeSlot][day.name] && isDetectedBreakForDay(timeSlot, day.name)) {
+        result[timeSlot][day.name] = {
+          subject: '',
+          location: '',
+          teacher: '',
+          start: new Date(),
+          end: new Date(),
+          isBreak: true
+        };
       }
     });
   });
@@ -637,6 +713,80 @@ function parseICalData(icalData) {
   }
 
   return events;
+}
+
+function getTimeDifference(time1, time2) {
+  const [h1, m1] = time1.split(':').map(Number);
+  const [h2, m2] = time2.split(':').map(Number);
+  
+  const minutes1 = h1 * 60 + m1;
+  const minutes2 = h2 * 60 + m2;
+  
+  return Math.abs(minutes2 - minutes1);
+}
+
+function isDetectedBreak(timeSlot) {
+  // Check if this time slot has any overlapping events
+  const [slotStart, slotEnd] = timeSlot.split(' - ');
+  const [slotStartHour, slotStartMin] = slotStart.split(':').map(Number);
+  const [slotEndHour, slotEndMin] = slotEnd.split(':').map(Number);
+  const slotStartMinutes = slotStartHour * 60 + slotStartMin;
+  const slotEndMinutes = slotEndHour * 60 + slotEndMin;
+
+  const hasOverlappingEvent = state.scheduleData.some(event => {
+    const eventStartTime = formatTime(new Date(event.start));
+    const eventEndTime = formatTime(new Date(event.end));
+    const [eventStartHour, eventStartMin] = eventStartTime.split(':').map(Number);
+    const [eventEndHour, eventEndMin] = eventEndTime.split(':').map(Number);
+    const eventStartMinutes = eventStartHour * 60 + eventStartMin;
+    const eventEndMinutes = eventEndHour * 60 + eventEndMin;
+
+    // Check if event overlaps with this time slot
+    return (
+      (eventStartMinutes <= slotStartMinutes && eventEndMinutes > slotStartMinutes) ||
+      (eventStartMinutes < slotEndMinutes && eventEndMinutes >= slotEndMinutes) ||
+      (eventStartMinutes >= slotStartMinutes && eventEndMinutes <= slotEndMinutes)
+    );
+  });
+  
+  // Als er geen overlappend event is voor dit tijdslot, is het waarschijnlijk een pauze
+  return !hasOverlappingEvent;
+}
+
+function isDetectedBreakForDay(timeSlot, dayName) {
+  // Check if this time slot has any overlapping events for this specific day
+  const [slotStart, slotEnd] = timeSlot.split(' - ');
+  const [slotStartHour, slotStartMin] = slotStart.split(':').map(Number);
+  const [slotEndHour, slotEndMin] = slotEnd.split(':').map(Number);
+  const slotStartMinutes = slotStartHour * 60 + slotStartMin;
+  const slotEndMinutes = slotEndHour * 60 + slotEndMin;
+
+  const hasOverlappingEventOnDay = state.scheduleData.some(event => {
+    const eventDate = new Date(event.start);
+    const eventDayName = eventDate.toLocaleDateString('nl-NL', { weekday: 'long' });
+    
+    // Only check events for this specific day
+    if (eventDayName !== dayName) {
+      return false;
+    }
+
+    const eventStartTime = formatTime(new Date(event.start));
+    const eventEndTime = formatTime(new Date(event.end));
+    const [eventStartHour, eventStartMin] = eventStartTime.split(':').map(Number);
+    const [eventEndHour, eventEndMin] = eventEndTime.split(':').map(Number);
+    const eventStartMinutes = eventStartHour * 60 + eventStartMin;
+    const eventEndMinutes = eventEndHour * 60 + eventEndMin;
+
+    // Check if event overlaps with this time slot
+    return (
+      (eventStartMinutes <= slotStartMinutes && eventEndMinutes > slotStartMinutes) ||
+      (eventStartMinutes < slotEndMinutes && eventEndMinutes >= slotEndMinutes) ||
+      (eventStartMinutes >= slotStartMinutes && eventEndMinutes <= slotEndMinutes)
+    );
+  });
+  
+  // Als er geen overlappend event is voor dit tijdslot op deze dag, is het waarschijnlijk een pauze
+  return !hasOverlappingEventOnDay;
 }
 
 
