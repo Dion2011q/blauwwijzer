@@ -29,12 +29,27 @@
                     <li><a class="headerlink" href="chat.html">Chat</a></li>
                 </ul>
             </div>        </nav>
-        <button id="theme-toggle-btn"></button>
+        <div class="header-right">
+            <div class="hamburger-menu" id="hamburger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <button id="theme-toggle-btn"></button>
+        </div>
+        <nav class="mobile-nav" id="mobile-nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="todo.html">Todo</a></li>
+                <li><a href="notes.html">Notes</a></li>
+                <li><a href="chat.html">Chat</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <main>
-        <div class="chat-container">
-            <span class="minnit-chat-sembed" data-chatname="https://organizations.minnit.chat/971032433378007/Main?embed" data-style="width:100%; height:100vh;">Chat</span>
+    <main style="padding: 0; margin: 0;">
+        <div class="chat-container" style="margin: 0; padding: 0; height: calc(100vh - 60px);">
+            <span class="minnit-chat-sembed" data-chatname="https://organizations.minnit.chat/971032433378007/Main?embed" data-style="width:100%; height:100%;">Chat</span>
         </div>
     </main>
 
