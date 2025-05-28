@@ -12,47 +12,85 @@ const scheduleBody = document.getElementById('schedule-body');
 const loadingIndicator = document.getElementById('loading-indicator');
 const calendarError = document.getElementById('calendar-error');
 
+// Mobile DOM Elements
+const hamburgerMenu = document.getElementById('hamburger-menu');
+const mobileNav = document.getElementById('mobile-nav');
+const prevDayBtn = document.getElementById('prev-day-btn');
+const nextDayBtn = document.getElementById('next-day-btn');
+const currentDayDisplay = document.getElementById('current-day-display');
+const mobileScheduleTable = document.getElementById('mobile-schedule-table');
+const mobileScheduleBody = document.getElementById('mobile-schedule-body');
+const mobileLoadingIndicator = document.getElementById('mobile-loading-indicator');
+const mobileCalendarError = document.getElementById('mobile-calendar-error');
+const mobileDayHeader = document.getElementById('mobile-day-header');
+
 // Application state
 let state = {
   darkMode: false,
   schedules: JSON.parse(localStorage.getItem('schedules')) || [],
   activeScheduleIndex: parseInt(localStorage.getItem('activeScheduleIndex')) || 0,
-  calendarUrl: localStorage.getItem('calendarUrl') || '', // Remove after schedules are implemented
-  userName: localStorage.getItem('userName') || '', // Remove after schedules are implemented
+  
   currentWeek: getCurrentWeek(),
+  currentDay: (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  })(),
   scheduleData: [],
   isLoading: false,
   error: null
 };
 
+// Mobile menu functions
+function toggleMobileMenu() {
+  hamburgerMenu.classList.toggle('active');
+  mobileNav.classList.toggle('active');
+}
+
+// Check if device is mobile
+function isMobile() {
+  return window.innerWidth <= 768;
+}
+
 // Initialize the app
 function initApp() {
-  // Update title with username if available
-  const userName = localStorage.getItem('userName');
-  if (userName) {
-    document.getElementById('weekrooster-title').textContent = `${userName}'s weekrooster`;
-  }
-
   // Show modal immediately if no calendar URL is set
   if (!state.schedules || state.schedules.length === 0) {
     openCalendarModal();
-    closeModalBtn.style.display = 'none'; // Hide close button
+    if (closeModalBtn) closeModalBtn.style.display = 'none'; // Hide close button
   }
 
   // Set up event listeners
-  calendarSettingsBtn.addEventListener('click', openCalendarModal);
-  closeModalBtn.addEventListener('click', () => {
-    calendarModal.classList.remove('active');
-    closeModalBtn.style.display = 'block'; // Reset display of close button
-  });
+  const calendarSettingsButton = document.getElementById('calendar-settings-btn');
+  if (calendarSettingsButton) {
+    calendarSettingsButton.addEventListener('click', openCalendarModal);
+  }
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', () => {
+      calendarModal.classList.remove('active');
+      closeModalBtn.style.display = 'block'; // Reset display of close button
+    });
+  }
 
-  document.getElementById('calendar-url-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    saveCalendarUrl();
-  });
+  const calendarForm = document.getElementById('calendar-url-form');
+  if (calendarForm) {
+    calendarForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      saveCalendarUrl();
+    });
+  }
 
-  prevWeekBtn.addEventListener('click', goToPreviousWeek);
-  nextWeekBtn.addEventListener('click', goToNextWeek);
+  if (prevWeekBtn) prevWeekBtn.addEventListener('click', goToPreviousWeek);
+  if (nextWeekBtn) nextWeekBtn.addEventListener('click', goToNextWeek);
+
+  // Mobile navigation
+  if (hamburgerMenu) {
+    hamburgerMenu.addEventListener('click', toggleMobileMenu);
+  }
+
+  // Day navigation
+  if (prevDayBtn) prevDayBtn.addEventListener('click', goToPreviousDay);
+  if (nextDayBtn) nextDayBtn.addEventListener('click', goToNextDay);
 
   // Load saved dark mode preference or use system preference
   const savedDarkMode = localStorage.getItem('darkMode');
@@ -74,18 +112,138 @@ function initApp() {
     }
   });
 
-  // Load schedule data if we have schedules
-  if (state.schedules && state.schedules.length > 0) {
+  // Initialize schedule switcher first
+  updateScheduleSwitcher();
+
+  // Update the week display
+  updateWeekDisplay();
+  updateCurrentDayDisplay();
+
+  // Load schedule data if we have schedules (only once at startup)
+  if (state.schedules && state.schedules.length > 0 && state.activeScheduleIndex >= 0) {
     loadScheduleData();
   } else {
     // Show calendar modal if no schedules are set
     openCalendarModal();
   }
-    // Initialize schedule switcher
-    updateScheduleSwitcher();
+}
 
-  // Update the week display
-  updateWeekDisplay();
+// Mobile schedule rendering
+function renderMobileSchedule() {
+  if (!mobileScheduleBody) return;
+  
+  // Clear the table
+  mobileScheduleBody.innerHTML = '';
+
+  // Get current day name
+  const currentDayName = state.currentDay.toLocaleDateString('nl-NL', { weekday: 'long' });
+
+  // Filter events for current day
+  const dayEvents = state.scheduleData.filter(event => {
+    const eventDate = new Date(event.start);
+    return eventDate.toDateString() === state.currentDay.toDateString();
+  });
+
+  if (dayEvents.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 2;
+    cell.textContent = 'Geen lessen';
+    cell.style.textAlign = 'center';
+    cell.style.padding = '2rem';
+    cell.style.color = 'var(--muted)';
+    row.appendChild(cell);
+    mobileScheduleBody.appendChild(row);
+    return;
+  }
+
+  // Sort events by time
+  dayEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+  // Get current time for highlighting
+  const now = new Date();
+  const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+  const isToday = now.toDateString() === state.currentDay.toDateString();
+
+  dayEvents.forEach(event => {
+    const row = document.createElement('tr');
+    
+    // Check if this is the current lesson
+    const eventStart = new Date(event.start);
+    const eventEnd = new Date(event.end);
+    const eventStartMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
+    const eventEndMinutes = eventEnd.getHours() * 60 + eventEnd.getMinutes();
+    
+    const isCurrentLesson = isToday && 
+      currentTimeMinutes >= eventStartMinutes && 
+      currentTimeMinutes <= eventEndMinutes;
+    
+    if (isCurrentLesson) {
+      row.className = 'mobile-current-time-row';
+    }
+    
+    // Time cell
+    const timeCell = document.createElement('td');
+    timeCell.className = 'mobile-time-cell';
+    const startTime = formatTime(new Date(event.start));
+    const endTime = formatTime(new Date(event.end));
+    timeCell.textContent = `${startTime} - ${endTime}`;
+    
+    // Event cell
+    const eventCell = document.createElement('td');
+    eventCell.className = 'mobile-event-cell';
+    
+    const eventBlock = document.createElement('div');
+    eventBlock.className = 'schedule-block';
+    
+    const eventInfo = document.createElement('div');
+    eventInfo.className = 'event-info';
+    const displayText = [
+      event.subject,
+      event.location !== 'Geen locatie' ? event.location : '',
+      event.teacher !== 'Onbekend' ? event.teacher : ''
+    ].filter(Boolean).join(' ');
+    eventInfo.textContent = displayText;
+
+    const noteToggle = document.createElement('button');
+    noteToggle.className = 'note-toggle';
+    noteToggle.innerHTML = '📝';
+    noteToggle.title = 'Toggle notities';
+
+    const noteArea = document.createElement('textarea');
+    noteArea.className = 'note-area hidden';
+    noteArea.placeholder = 'Voeg notities toe...';
+
+    // Load saved note if exists
+    const eventDateTime = event.start.toISOString();
+    const noteKey = `note_${eventDateTime}_${event.subject}`;
+    const toggleKey = `noteToggle_${eventDateTime}_${event.subject}`;
+    noteArea.value = localStorage.getItem(noteKey) || '';
+
+    // Load saved toggle state
+    const isVisible = localStorage.getItem(toggleKey) === 'true';
+    if (isVisible) {
+      noteArea.classList.remove('hidden');
+    }
+
+    noteToggle.addEventListener('click', () => {
+      const isNowVisible = noteArea.classList.toggle('hidden');
+      localStorage.setItem(toggleKey, !isNowVisible);
+    });
+
+    noteArea.addEventListener('input', () => {
+      localStorage.setItem(noteKey, noteArea.value);
+    });
+
+    eventBlock.appendChild(eventInfo);
+    eventBlock.appendChild(noteToggle);
+    eventBlock.appendChild(noteArea);
+    eventCell.appendChild(eventBlock);
+    
+    row.appendChild(timeCell);
+    row.appendChild(eventCell);
+    mobileScheduleBody.appendChild(row);
+  });
 }
 
 // Theme functions
@@ -101,6 +259,9 @@ function closeCalendarModal() {
 }
 
 function saveCalendarUrl() {
+  // Prevent saving if already loading
+  if (state.isLoading) return;
+  
   const url = calendarUrlInput.value.trim();
   const name = document.getElementById('name-input').value.trim();
   if (url && name) {
@@ -109,9 +270,18 @@ function saveCalendarUrl() {
     state.activeScheduleIndex = state.schedules.length - 1;
     localStorage.setItem('schedules', JSON.stringify(state.schedules));
     localStorage.setItem('activeScheduleIndex', state.activeScheduleIndex);
+    
+    // Clear form
+    calendarUrlInput.value = '';
+    document.getElementById('name-input').value = '';
+    
     updateScheduleSwitcher();
     closeCalendarModal();
-    loadScheduleData();
+    
+    // Small delay to ensure UI is updated before loading
+    setTimeout(() => {
+      loadScheduleData();
+    }, 100);
   }
 }
 
@@ -160,21 +330,25 @@ function updateScheduleSwitcher() {
 }
 
 function switchSchedule(index) {
+  // Prevent switching if already loading
+  if (state.isLoading) return;
+  
   state.activeScheduleIndex = index;
   localStorage.setItem('activeScheduleIndex', index);
   updateScheduleSwitcher();
-  loadScheduleData();
+  
   const schedule = state.schedules[index];
-  document.getElementById('weekrooster-title').textContent = `${schedule.name}'s weekrooster`;
+  if (schedule) {
+    document.getElementById('weekrooster-title').textContent = `${schedule.name}'s weekrooster`;
+    
+    // Small delay to ensure UI is updated before loading
+    setTimeout(() => {
+      loadScheduleData();
+    }, 100);
+  }
 }
 
-// Load saved calendar URL on startup
-const savedCalendarUrl = localStorage.getItem('calendarUrl');
-if (savedCalendarUrl) {
-  state.calendarUrl = savedCalendarUrl;
-  calendarUrlInput.value = savedCalendarUrl;
-  loadScheduleData(); // Direct laden van rooster data
-}
+
 
 // Week navigation functions
 function getCurrentWeek() {
@@ -237,6 +411,9 @@ function animateWeekTransition(direction) {
 }
 
 function goToNextWeek() {
+  // Prevent navigation if already loading
+  if (state.isLoading) return;
+  
   animateWeekTransition('next');
   state.currentWeek = getNextWeek(state.currentWeek.start);
   updateWeekDisplay();
@@ -244,17 +421,91 @@ function goToNextWeek() {
 }
 
 function goToPreviousWeek() {
+  // Prevent navigation if already loading
+  if (state.isLoading) return;
+  
   animateWeekTransition('prev');
   state.currentWeek = getPreviousWeek(state.currentWeek.start);
   updateWeekDisplay();
   loadScheduleData();
 }
 
+// Day navigation functions
+function goToNextDay() {
+  // Prevent navigation if already loading
+  if (state.isLoading) return;
+  
+  const nextDay = new Date(state.currentDay);
+  nextDay.setDate(nextDay.getDate() + 1);
+  state.currentDay = nextDay;
+  
+  // Check if we need to load a new week's data
+  if (nextDay > state.currentWeek.end) {
+    state.currentWeek = getNextWeek(state.currentWeek.start);
+    loadScheduleData();
+  } else {
+    // Just update display if staying in same week
+    updateCurrentDayDisplay();
+    renderMobileSchedule();
+  }
+}
+
+function goToPreviousDay() {
+  // Prevent navigation if already loading
+  if (state.isLoading) return;
+  
+  const prevDay = new Date(state.currentDay);
+  prevDay.setDate(prevDay.getDate() - 1);
+  state.currentDay = prevDay;
+  
+  // Check if we need to load a new week's data
+  if (prevDay < state.currentWeek.start) {
+    state.currentWeek = getPreviousWeek(state.currentWeek.start);
+    loadScheduleData();
+  } else {
+    // Just update display if staying in same week
+    updateCurrentDayDisplay();
+    renderMobileSchedule();
+  }
+}
+
+function updateCurrentDayDisplay() {
+  if (!currentDayDisplay) return;
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize to start of day
+  
+  const currentDay = new Date(state.currentDay);
+  currentDay.setHours(0, 0, 0, 0); // Normalize to start of day
+  
+  const daysDiff = Math.floor((currentDay - today) / (1000 * 60 * 60 * 24));
+  
+  let displayText;
+  if (daysDiff === 0) {
+    displayText = 'Vandaag';
+  } else if (daysDiff === 1) {
+    displayText = 'Morgen';
+  } else if (daysDiff === -1) {
+    displayText = 'Gisteren';
+  } else {
+    displayText = state.currentDay.toLocaleDateString('nl-NL', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long' 
+    });
+  }
+  
+  currentDayDisplay.textContent = displayText;
+  if (mobileDayHeader) {
+    mobileDayHeader.textContent = displayText;
+  }
+}
+
 // Touch swipe support
 let touchStartX = 0;
 let touchEndX = 0;
 
-// Gebruik de bestaande scheduleTable variabele
+// Desktop swipe support
 if (scheduleTable) {
   scheduleTable.addEventListener('touchstart', e => {
     touchStartX = e.changedTouches[0].screenX;
@@ -262,20 +513,44 @@ if (scheduleTable) {
 
   scheduleTable.addEventListener('touchend', e => {
     touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
+    handleDesktopSwipe();
   });
 }
 
-function handleSwipe() {
-  const swipeThreshold = 100; // Verhoog de drempelwaarde
+// Mobile swipe support
+if (mobileScheduleTable) {
+  mobileScheduleTable.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+
+  mobileScheduleTable.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleMobileSwipe();
+  });
+}
+
+function handleDesktopSwipe() {
+  const swipeThreshold = 100;
   const swipeLength = touchEndX - touchStartX;
 
-  // Controleer of de swipe lang genoeg is
   if (Math.abs(swipeLength) > swipeThreshold) {
     if (swipeLength > 0) {
       goToPreviousWeek();
     } else {
       goToNextWeek();
+    }
+  }
+}
+
+function handleMobileSwipe() {
+  const swipeThreshold = 100;
+  const swipeLength = touchEndX - touchStartX;
+
+  if (Math.abs(swipeLength) > swipeThreshold) {
+    if (swipeLength > 0) {
+      goToPreviousDay();
+    } else {
+      goToNextDay();
     }
   }
 }
@@ -304,6 +579,12 @@ function updateWeekDisplay() {
 
 // Schedule data loading
 async function loadScheduleData() {
+  // Prevent multiple simultaneous requests
+  if (state.isLoading) {
+    console.log('Already loading, skipping request');
+    return;
+  }
+
   const activeSchedule = state.schedules[state.activeScheduleIndex];
   if (!activeSchedule) {
     state.error = "Geen rooster geselecteerd";
@@ -328,11 +609,44 @@ async function loadScheduleData() {
     let url = activeSchedule.url;
 
     // Convert Google Calendar sharing URL to iCal format if needed
-    if (url.includes('calendar.google.com/calendar/u/') && url.includes('cid=')) {
-      const cidMatch = url.match(/cid=([^&]+)/);
-      if (cidMatch) {
-        const decodedCid = decodeURIComponent(cidMatch[1]);
-        url = `https://calendar.google.com/calendar/ical/${decodedCid}/public/basic.ics`;
+    if (url.includes('calendar.google.com') && !url.includes('/ical/')) {
+      console.log('Converting Google Calendar URL to iCal format');
+      
+      // Handle different Google Calendar URL formats
+      let calendarId = null;
+      
+      // Format: https://calendar.google.com/calendar/u/0?cid=bWRyb2Rlcm1vbmRAZ21haWwuY29t
+      if (url.includes('cid=')) {
+        const cidMatch = url.match(/cid=([^&]+)/);
+        if (cidMatch) {
+          let decodedCid = decodeURIComponent(cidMatch[1]);
+          
+          // Check if the cid is base64 encoded (common for Gmail addresses)
+          try {
+            const base64Decoded = atob(decodedCid);
+            // If it decodes successfully and looks like an email, use it
+            if (base64Decoded.includes('@')) {
+              calendarId = base64Decoded;
+            } else {
+              calendarId = decodedCid;
+            }
+          } catch (e) {
+            // If base64 decoding fails, use the original decoded value
+            calendarId = decodedCid;
+          }
+        }
+      }
+      // Handle other patterns like embed URLs
+      else if (url.includes('embed?src=')) {
+        const srcMatch = url.match(/src=([^&]+)/);
+        if (srcMatch) {
+          calendarId = decodeURIComponent(srcMatch[1]);
+        }
+      }
+      
+      if (calendarId) {
+        url = `https://calendar.google.com/calendar/ical/${encodeURIComponent(calendarId)}/public/basic.ics`;
+        console.log('Converted to iCal URL:', url);
       }
     }
 
@@ -345,24 +659,36 @@ async function loadScheduleData() {
       icalData = await response.text();
     } catch (directError) {
       console.log('Direct fetch failed, trying with CORS proxy:', directError.message);
-      
+
       // Probeer met CORS proxy
       const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
       try {
         const proxyResponse = await fetch(proxyUrl);
         if (!proxyResponse.ok) {
-          throw new Error('Proxy fetch failed');
+          throw new Error(`Proxy fetch failed: ${proxyResponse.status} ${proxyResponse.statusText}`);
         }
         icalData = await proxyResponse.text();
       } catch (proxyError) {
+        console.log('CORS proxy failed, trying with allorigins:', proxyError.message);
+        
         // Laatste poging met allorigins
-        const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-        const allOriginsResponse = await fetch(allOriginsUrl);
-        if (!allOriginsResponse.ok) {
-          throw new Error('Failed to load calendar data via any method');
+        try {
+          const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+          const allOriginsResponse = await fetch(allOriginsUrl);
+          if (!allOriginsResponse.ok) {
+            throw new Error(`AllOrigins fetch failed: ${allOriginsResponse.status} ${allOriginsResponse.statusText}`);
+          }
+          const allOriginsData = await allOriginsResponse.json();
+          
+          if (allOriginsData.status && allOriginsData.status.http_code !== 200) {
+            throw new Error(`Calendar server returned: ${allOriginsData.status.http_code}`);
+          }
+          
+          icalData = allOriginsData.contents;
+        } catch (allOriginsError) {
+          console.log('All methods failed:', allOriginsError.message);
+          throw new Error(`Kan rooster niet laden. Controleer of de URL correct is en de calendar publiek toegankelijk is. Details: ${allOriginsError.message}`);
         }
-        const allOriginsData = await allOriginsResponse.json();
-        icalData = allOriginsData.contents;
       }
     }
 
@@ -374,31 +700,83 @@ async function loadScheduleData() {
       return eventDate >= state.currentWeek.start && eventDate <= state.currentWeek.end;
     });
 
+    // Always update displays after loading data
+    updateCurrentDayDisplay();
+    updateWeekDisplay();
+    
+    console.log('Rendering schedule for', isMobile() ? 'mobile' : 'desktop');
+    
+    // Render both views to ensure they work on all devices
     renderScheduleTable();
+    renderMobileSchedule();
   } catch (error) {
     console.error('Error loading schedule data:', error);
-    state.error = `Fout bij laden rooster: ${error.message}`;
+    
+    // Specifieke foutmeldingen voor verschillende scenario's
+    if (error.message.includes('Calendar server returned: 404')) {
+      state.error = `❌ Google Calendar: Deze calendar is niet publiek toegankelijk of bestaat niet. Ga naar je Google Calendar instellingen en maak de calendar publiek.`;
+    } else if (error.message.includes('Calendar server returned: 403')) {
+      state.error = `❌ Geen toegang: De calendar is privé. Maak deze publiek toegankelijk in de calendar instellingen.`;
+    } else if (error.message.includes('publiek toegankelijk')) {
+      state.error = error.message;
+    } else if (activeSchedule.url.includes('somtoday.nl')) {
+      state.error = `❌ SomToday Calendar: Deze URL vereist inloggegevens en kan niet via de browser geladen worden. Probeer de publieke iCal export vanuit SomToday.`;
+    } else {
+      state.error = `❌ Onbekende fout: ${error.message}`;
+    }
   } finally {
+    // Always ensure loading state is cleared
     state.isLoading = false;
     updateUIState();
+    updateScheduleSwitcher();
+    console.log('Loading completed, state.isLoading set to false');
   }
 }
 
 // UI rendering functions
-// This line sets up the application state.
 function updateUIState() {
-  if (state.isLoading) {
-    loadingIndicator.classList.remove('hidden');
-    scheduleTable.classList.add('hidden');
-    calendarError.classList.add('hidden');
-  } else if (state.error) {
-    loadingIndicator.classList.add('hidden');
-    scheduleTable.classList.add('hidden');
-    calendarError.classList.remove('hidden');
-  } else {
-    loadingIndicator.classList.add('hidden');
-    scheduleTable.classList.remove('hidden');
-    calendarError.classList.add('hidden');
+  console.log('Updating UI state:', { isLoading: state.isLoading, error: state.error });
+  
+  // Desktop elements
+  if (loadingIndicator && scheduleTable && calendarError) {
+    if (state.isLoading) {
+      loadingIndicator.classList.remove('hidden');
+      scheduleTable.classList.add('hidden');
+      calendarError.classList.add('hidden');
+    } else if (state.error) {
+      loadingIndicator.classList.add('hidden');
+      scheduleTable.classList.add('hidden');
+      calendarError.classList.remove('hidden');
+      const errorP = calendarError.querySelector('p');
+      if (errorP) {
+        errorP.textContent = state.error;
+      }
+    } else {
+      loadingIndicator.classList.add('hidden');
+      scheduleTable.classList.remove('hidden');
+      calendarError.classList.add('hidden');
+    }
+  }
+
+  // Mobile elements
+  if (mobileLoadingIndicator && mobileScheduleTable && mobileCalendarError) {
+    if (state.isLoading) {
+      mobileLoadingIndicator.classList.remove('hidden');
+      mobileScheduleTable.classList.add('hidden');
+      mobileCalendarError.classList.add('hidden');
+    } else if (state.error) {
+      mobileLoadingIndicator.classList.add('hidden');
+      mobileScheduleTable.classList.add('hidden');
+      mobileCalendarError.classList.remove('hidden');
+      const errorP = mobileCalendarError.querySelector('p');
+      if (errorP) {
+        errorP.textContent = state.error;
+      }
+    } else {
+      mobileLoadingIndicator.classList.add('hidden');
+      mobileScheduleTable.classList.remove('hidden');
+      mobileCalendarError.classList.add('hidden');
+    }
   }
 }
 
@@ -410,10 +788,10 @@ function getCurrentTimeSlot(timeSlots) {
     const [start, end] = timeSlots[i].split(' - ');
     const [startHour, startMin] = start.split(':').map(Number);
     const [endHour, endMin] = end.split(':').map(Number);
-    
+
     const startMinutes = startHour * 60 + startMin;
     const endMinutes = endHour * 60 + endMin;
-    
+
     if (currentTimeMinutes >= startMinutes && currentTimeMinutes <= endMinutes) {
       return i;
     }
@@ -460,11 +838,11 @@ function renderScheduleTable() {
         const now = new Date();
         const isCurrentWeek = now >= state.currentWeek.start && now <= state.currentWeek.end;
         const currentDayName = now.toLocaleDateString('nl-NL', { weekday: 'long' });
-        
+
         if (isCurrentWeek && day.name === currentDayName) {
           const currentTimeSlotIndex = getCurrentTimeSlot(timeSlots);
           const currentSlotIndex = timeSlots.indexOf(timeSlot);
-          
+
           if (currentTimeSlotIndex === currentSlotIndex) {
             cell.classList.add('current-time-cell');
           }
@@ -569,13 +947,18 @@ function getTimeSlots() {
       '13:10 - 13:30',
       '13:30 - 14:00',
       '14:00 - 14:30',
-      '14:30 - 15:00'
+      '14:30 - 15:00',
+      '15:00 - 15:30',
+      '15:30 - 16:00',
+      '16:00 - 16:30',
+      '16:30 - 17:00',
+      '17:00 - 17:30'
     ];
   }
 
   // Verzamel alle tijdspunten (start en eind) van events
   const timePoints = new Set();
-  
+
   state.scheduleData.forEach(event => {
     const startTime = formatTime(new Date(event.start));
     const endTime = formatTime(new Date(event.end));
@@ -597,7 +980,7 @@ function getTimeSlots() {
   for (let i = 0; i < sortedTimes.length - 1; i++) {
     const startTime = sortedTimes[i];
     const endTime = sortedTimes[i + 1];
-    
+
     // Controleer of dit tijdslot minimaal 5 minuten is
     const gap = getTimeDifference(startTime, endTime);
     if (gap >= 5) {
@@ -627,7 +1010,7 @@ function organizeScheduleBySlot(timeSlots, days) {
 
     const eventStartTime = formatTime(eventDate);
     const eventEndTime = formatTime(eventEndDate);
-    
+
     // Convert to minutes for easier comparison
     const [eventStartHour, eventStartMin] = eventStartTime.split(':').map(Number);
     const [eventEndHour, eventEndMin] = eventEndTime.split(':').map(Number);
@@ -718,10 +1101,10 @@ function parseICalData(icalData) {
 function getTimeDifference(time1, time2) {
   const [h1, m1] = time1.split(':').map(Number);
   const [h2, m2] = time2.split(':').map(Number);
-  
+
   const minutes1 = h1 * 60 + m1;
   const minutes2 = h2 * 60 + m2;
-  
+
   return Math.abs(minutes2 - minutes1);
 }
 
@@ -748,7 +1131,7 @@ function isDetectedBreak(timeSlot) {
       (eventStartMinutes >= slotStartMinutes && eventEndMinutes <= slotEndMinutes)
     );
   });
-  
+
   // Als er geen overlappend event is voor dit tijdslot, is het waarschijnlijk een pauze
   return !hasOverlappingEvent;
 }
@@ -764,7 +1147,7 @@ function isDetectedBreakForDay(timeSlot, dayName) {
   const hasOverlappingEventOnDay = state.scheduleData.some(event => {
     const eventDate = new Date(event.start);
     const eventDayName = eventDate.toLocaleDateString('nl-NL', { weekday: 'long' });
-    
+
     // Only check events for this specific day
     if (eventDayName !== dayName) {
       return false;
@@ -784,7 +1167,7 @@ function isDetectedBreakForDay(timeSlot, dayName) {
       (eventStartMinutes >= slotStartMinutes && eventEndMinutes <= slotEndMinutes)
     );
   });
-  
+
   // Als er geen overlappend event is voor dit tijdslot op deze dag, is het waarschijnlijk een pauze
   return !hasOverlappingEventOnDay;
 }
