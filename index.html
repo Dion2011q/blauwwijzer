@@ -28,7 +28,22 @@
             </ul>
         </div>
         </nav>
-        <button id="theme-toggle-btn"></button>
+        <div class="header-right">
+            <div class="hamburger-menu" id="hamburger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <button id="theme-toggle-btn"></button>
+        </div>
+        <nav class="mobile-nav" id="mobile-nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="todo.html">Todo</a></li>
+                <li><a href="notes.html">Notes</a></li>
+                <li><a href="chat.html">Chat</a></li>
+            </ul>
+        </nav>
     </header>
     <div id="schedule-switcher"></div>
 
@@ -40,6 +55,35 @@
             <div class="week-navigation">
                 <button id="prev-week-btn" class="btn">Vorige Week</button>
                 <button id="next-week-btn" class="btn">Volgende Week</button>
+            </div>
+
+            <!-- Mobile day navigation -->
+            <div class="day-navigation">
+                <button id="prev-day-btn">‹ Vorige</button>
+                <div class="current-day-display" id="current-day-display">Vandaag</div>
+                <button id="next-day-btn">Volgende ›</button>
+            </div>
+
+            <!-- Mobile schedule container -->
+            <div class="mobile-schedule-container">
+                <div id="mobile-loading-indicator" class="loading-indicator">
+                    <div class="spinner"></div>
+                    <p>Rooster laden...</p>
+                </div>
+
+                <div id="mobile-calendar-error" class="error-message hidden">
+                    <p>Fout bij laden van rooster</p>
+                </div>
+
+                <table id="mobile-schedule-table" class="mobile-schedule-table hidden">
+                    <thead>
+                        <tr>
+                            <th>Tijd</th>
+                            <th id="mobile-day-header">Vandaag</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mobile-schedule-body"></tbody>
+                </table>
             </div>
 
             <div id="schedule-table-container">
