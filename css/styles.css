@@ -1002,3 +1002,137 @@ th {
         padding: 0 0.5rem;
     }
 }
+
+/* Learning Resources Styles */
+.learning-resources {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.learning-resources h2 {
+    color: var(--primary);
+    margin: 2rem 0 1rem 0;
+    font-size: 1.5rem;
+}
+
+.resource-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.resource-link {
+    display: block;
+    background-color: var(--header);
+    color: white;
+    text-decoration: none;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.resource-link:hover {
+    background-color: var(--primary-dark, #3a37c4);
+}
+
+.add-link-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-width: 400px;
+}
+
+.add-link-form input {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--background);
+    color: var(--foreground);
+}
+
+.all-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.custom-link-item {
+    position: relative;
+    display: block;
+}
+
+.delete-link-btn {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: rgba(255, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.delete-link-btn:hover {
+    background: rgba(255, 0, 0, 0.9);
+}
+
+/* Updates Page Styles */
+.releases {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.release {
+    background-color: var(--card-background, rgba(255, 255, 255, 0.05));
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--foreground);
+}
+
+.release h3 {
+    color: var(--primary-title);
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+}
+
+.release p {
+    margin: 0;
+    color: var(--foreground);
+}
+
+/* Footer Styles */
+footer {
+    background-color: var(--header);
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+}
+
+footer a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .add-link-form {
+        max-width: 100%;
+    }
+}
