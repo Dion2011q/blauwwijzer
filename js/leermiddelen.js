@@ -1,4 +1,3 @@
-
 // Learning resources functionality
 document.addEventListener('DOMContentLoaded', function() {
     const apiLink = document.getElementById('api-link');
