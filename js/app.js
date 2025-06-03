@@ -933,7 +933,9 @@ function getDaysOfWeek() {
 function getTimeSlots() {
   if (!state.scheduleData || state.scheduleData.length === 0) {
     // Fallback naar standaard tijdslots als er geen data is
-    return [];
+    return [
+      'je hebt niks',
+    ];
   }
 
   // Verzamel alle tijdspunten (start en eind) van events
