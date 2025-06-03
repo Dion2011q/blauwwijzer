@@ -50,11 +50,35 @@
     </header>
     <main>
         <div class="container">
-            <p>Under construction</p>
+            <h1>Leermiddelen</h1>
+            
+            <div class="learning-resources">
+                <div class="add-link-form">
+                    <input type="text" id="link-name" placeholder="Naam van de link" />
+                    <input type="url" id="link-url" placeholder="URL van de link" />
+                    <button id="add-link-btn" class="btn">Link Toevoegen</button>
+                </div>
+
+                <h2>Links</h2>
+                <div class="all-links">
+                    <div class="resource-links">
+                        <a href="https://inloggen.learnbeat.nl" target="_blank" class="resource-link">Learnbeat</a>
+                        <a href="http://leerling.blink.nl" target="_blank" class="resource-link">Blink</a>
+                        <a href="https://apps.noordhoff.nl/my/nl/bookshelf" target="_blank" class="resource-link">Noordhoff</a>
+                        <a href="#" id="api-link" target="_blank" class="resource-link">Jouw API</a>
+                    </div>
+                    <div id="custom-links" class="custom-links"></div>
+                </div>
+            </div>
         </div>
     </main>
 
+    <footer>
+        <p>&copy; Dionweb 2025 | <a href="updates.html">Updates</a></p>
+    </footer>
+
     <script src="js/app.js"></script>
     <script src="js/darkMode.js"></script>
+    <script src="js/leermiddelen.js"></script>
 </body>
 </html>
