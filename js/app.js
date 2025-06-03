@@ -933,27 +933,7 @@ function getDaysOfWeek() {
 function getTimeSlots() {
   if (!state.scheduleData || state.scheduleData.length === 0) {
     // Fallback naar standaard tijdslots als er geen data is
-    return [
-      '08:30 - 09:00',
-      '09:00 - 09:30',
-      '09:30 - 10:00',
-      '10:00 - 10:30',
-      '10:30 - 10:50',
-      '10:50 - 11:20',
-      '11:20 - 11:50',
-      '11:50 - 12:10',
-      '12:10 - 12:40',
-      '12:40 - 13:10',
-      '13:10 - 13:30',
-      '13:30 - 14:00',
-      '14:00 - 14:30',
-      '14:30 - 15:00',
-      '15:00 - 15:30',
-      '15:30 - 16:00',
-      '16:00 - 16:30',
-      '16:30 - 17:00',
-      '17:00 - 17:30'
-    ];
+    return [];
   }
 
   // Verzamel alle tijdspunten (start en eind) van events
