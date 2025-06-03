@@ -17,20 +17,44 @@
     <link rel="apple-touch-icon" href="images/favicon/apple-touch-icon.png">
     <link rel="manifest" href="images/favicon/site.webmanifest">
 </head>
+ <style>
+    main {
+      background-color: var(--background);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 100px;
+    }
+    h1 {
+      font-size: 72px;
+      margin-bottom: 20px;
+      color: var(--primary-title);
+    }
+    p {
+      font-size: 24px;
+      color: var(--primary-title);
+    }
+    a {
+        text-decoration: none;
+        font-size: 20px;
+        color: blue;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
 <body>
     <header>
         <div class="logo">blauwwijzer</div>
         <nav class="nav">
-        <div class="navdiv">
-            <ul class="headerul">
-                <li><a class="headerlink" href="index.html">Home</a></li>
-                <li><a class="headerlink" href="todo.html">Todo</a></li>
-                <li><a class="headerlink" href="notes.html"">Notes</a></li>
-                <li><a class="headerlink" href="chat.html">Chat</a></li>
-                <li><a class="headerlink" href="leermiddelen.html">Leermiddelen</a></li>
-            </ul>
-        </div>
-        </nav>
+            <div class="navdiv">
+                <ul class="headerul">
+                    <li><a class="headerlink" href="index.html">Home</a></li>
+                    <li><a class="headerlink" href="todo.html">Todo</a></li>
+                    <li><a class="headerlink" href="notes.html">Notes</a></li>
+                    <li><a class="headerlink" href="chat.html">Chat</a></li>
+                </ul>
+            </div>        </nav>
         <div class="header-right">
             <div class="hamburger-menu" id="hamburger-menu">
                 <span></span>
@@ -45,16 +69,16 @@
                 <li><a href="todo.html">Todo</a></li>
                 <li><a href="notes.html">Notes</a></li>
                 <li><a href="chat.html">Chat</a></li>
-                <li><a href="leermiddelen.html">Leermiddelen</a></li>
             </ul>
         </nav>
     </header>
-    <main style="padding: 0; margin: 0;">
-        <div class="chat-container" style="margin: 0; padding: 0; height: calc(100vh - 60px);">
-            <span class="minnit-chat-sembed" data-chatname="https://organizations.minnit.chat/971032433378007/Main?embed" data-style="width:100%; height:100%;">Chat</span>
+    <main>
+        <div class="container">
+            <h1>404</h1>
+            <p>Oeps! Deze pagina bestaat niet.</p>
+            <a href="/">Ga terug naar de homepagina</a>
         </div>
-    </main>
-    
+    </main>    
     <footer>
         <p>&copy; Dionweb 2025 | <a href="updates.html">Updates</a></p>
     </footer>
