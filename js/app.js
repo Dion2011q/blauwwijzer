@@ -29,7 +29,7 @@ let state = {
   darkMode: false,
   schedules: JSON.parse(localStorage.getItem('schedules')) || [],
   activeScheduleIndex: parseInt(localStorage.getItem('activeScheduleIndex')) || 0,
-  
+
   currentWeek: getCurrentWeek(),
   currentDay: (() => {
     const today = new Date();
@@ -131,7 +131,7 @@ function initApp() {
 // Mobile schedule rendering
 function renderMobileSchedule() {
   if (!mobileScheduleBody) return;
-  
+
   // Clear the table
   mobileScheduleBody.innerHTML = '';
 
@@ -167,35 +167,35 @@ function renderMobileSchedule() {
 
   dayEvents.forEach(event => {
     const row = document.createElement('tr');
-    
+
     // Check if this is the current lesson
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end);
     const eventStartMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
     const eventEndMinutes = eventEnd.getHours() * 60 + eventEnd.getMinutes();
-    
+
     const isCurrentLesson = isToday && 
       currentTimeMinutes >= eventStartMinutes && 
       currentTimeMinutes <= eventEndMinutes;
-    
+
     if (isCurrentLesson) {
       row.className = 'mobile-current-time-row';
     }
-    
+
     // Time cell
     const timeCell = document.createElement('td');
     timeCell.className = 'mobile-time-cell';
     const startTime = formatTime(new Date(event.start));
     const endTime = formatTime(new Date(event.end));
     timeCell.textContent = `${startTime} - ${endTime}`;
-    
+
     // Event cell
     const eventCell = document.createElement('td');
     eventCell.className = 'mobile-event-cell';
-    
+
     const eventBlock = document.createElement('div');
     eventBlock.className = 'schedule-block';
-    
+
     const eventInfo = document.createElement('div');
     eventInfo.className = 'event-info';
     const displayText = [
@@ -210,15 +210,97 @@ function renderMobileSchedule() {
     noteToggle.innerHTML = '📝';
     noteToggle.title = 'Toggle notities';
 
+    const colorToggle = document.createElement('button');
+    colorToggle.className = 'color-toggle';
+    colorToggle.innerHTML = '🎨';
+    colorToggle.title = 'Kies kleur';
+
     const noteArea = document.createElement('textarea');
     noteArea.className = 'note-area hidden';
     noteArea.placeholder = 'Voeg notities toe...';
+
+    const colorPicker = document.createElement('div');
+    colorPicker.className = 'color-picker hidden';
+
+    // Create comprehensive color palette
+    const colors = [
+      // Rood tinten
+      '#ff0000', '#ff3333', '#ff6666', '#ff9999', '#ffcccc',
+      '#cc0000', '#990000', '#660000', '#330000',
+
+      // Oranje tinten
+      '#ff6600', '#ff8533', '#ffa366', '#ffc299', '#ffe0cc',
+      '#cc5200', '#993d00', '#662900', '#331400',
+
+      // Geel tinten
+      '#ffff00', '#ffff33', '#ffff66', '#ffff99', '#ffffcc',
+      '#cccc00', '#999900', '#666600', '#333300',
+
+      // Groen tinten
+      '#00ff00', '#33ff33', '#66ff66', '#99ff99', '#ccffcc',
+      '#00cc00', '#009900', '#006600', '#003300',
+
+      // Blauw tinten
+      '#0000ff', '#3333ff', '#6666ff', '#9999ff', '#ccccff',
+      '#0000cc', '#000099', '#000066', '#000033',
+
+      // Paars tinten
+      '#8000ff', '#9933ff', '#b366ff', '#cc99ff', '#e6ccff',
+      '#6600cc', '#4d0099', '#330066', '#1a0033',
+
+      // Roze tinten
+      '#ff00ff', '#ff33ff', '#ff66ff', '#ff99ff', '#ffccff',
+      '#cc00cc', '#990099', '#660066', '#330033',
+
+      // Turquoise tinten
+      '#00ffff', '#33ffff', '#66ffff', '#99ffff', '#ccffff',
+      '#00cccc', '#009999', '#006666', '#003333',
+
+      // Grijs tinten
+      '#000000', '#333333', '#666666', '#999999', '#cccccc',
+      '#ffffff', '#f0f0f0', '#e0e0e0', '#d0d0d0', '#c0c0c0',
+
+      // Bruine tinten
+      '#8b4513', '#a0522d', '#cd853f', '#daa520', '#f4a460',
+      '#d2691e', '#bc8f8f', '#deb887', '#f5deb3', '#ffe4b5'
+    ];
+
+    // Add clear color option first
+    const clearColor = document.createElement('div');
+    clearColor.className = 'color-option clear-color';
+    clearColor.innerHTML = '×';
+    clearColor.title = 'Verwijder kleur';
+    clearColor.addEventListener('click', () => {
+      setLessonColor(eventDateTime, event.subject, null, eventBlock);
+      colorPicker.classList.add('hidden');
+    });
+    colorPicker.appendChild(clearColor);
+
+    colors.forEach(color => {
+      const colorOption = document.createElement('div');
+      colorOption.className = 'color-option';
+      colorOption.style.backgroundColor = color;
+      colorOption.addEventListener('click', () => {
+        setLessonColor(eventDateTime, event.subject, color, eventBlock);
+        colorPicker.classList.add('hidden');
+      });
+      colorPicker.appendChild(colorOption);
+    });
 
     // Load saved note if exists
     const eventDateTime = event.start.toISOString();
     const noteKey = `note_${eventDateTime}_${event.subject}`;
     const toggleKey = `noteToggle_${eventDateTime}_${event.subject}`;
+    const colorKey = `color_${eventDateTime}_${event.subject}`;
+
     noteArea.value = localStorage.getItem(noteKey) || '';
+
+    // Load saved color
+    const savedColor = localStorage.getItem(colorKey);
+    if (savedColor) {
+      eventBlock.style.backgroundColor = savedColor;
+      eventBlock.style.border = `2px solid ${savedColor}`;
+    }
 
     // Load saved toggle state
     const isVisible = localStorage.getItem(toggleKey) === 'true';
@@ -231,19 +313,40 @@ function renderMobileSchedule() {
       localStorage.setItem(toggleKey, !isNowVisible);
     });
 
+    colorToggle.addEventListener('click', () => {
+      colorPicker.classList.toggle('hidden');
+    });
+
     noteArea.addEventListener('input', () => {
       localStorage.setItem(noteKey, noteArea.value);
     });
 
     eventBlock.appendChild(eventInfo);
     eventBlock.appendChild(noteToggle);
+    eventBlock.appendChild(colorToggle);
     eventBlock.appendChild(noteArea);
+    eventBlock.appendChild(colorPicker);
     eventCell.appendChild(eventBlock);
-    
+
     row.appendChild(timeCell);
     row.appendChild(eventCell);
     mobileScheduleBody.appendChild(row);
   });
+}
+
+// Color functions
+function setLessonColor(eventDateTime, subject, color, eventBlock) {
+  const colorKey = `color_${eventDateTime}_${subject}`;
+
+  if (color) {
+    localStorage.setItem(colorKey, color);
+    eventBlock.style.backgroundColor = color;
+    eventBlock.style.border = `2px solid ${color}`;
+  } else {
+    localStorage.removeItem(colorKey);
+    eventBlock.style.backgroundColor = '';
+    eventBlock.style.border = '';
+  }
 }
 
 // Theme functions
@@ -261,7 +364,7 @@ function closeCalendarModal() {
 function saveCalendarUrl() {
   // Prevent saving if already loading
   if (state.isLoading) return;
-  
+
   const url = calendarUrlInput.value.trim();
   const name = document.getElementById('name-input').value.trim();
   if (url && name) {
@@ -270,14 +373,14 @@ function saveCalendarUrl() {
     state.activeScheduleIndex = state.schedules.length - 1;
     localStorage.setItem('schedules', JSON.stringify(state.schedules));
     localStorage.setItem('activeScheduleIndex', state.activeScheduleIndex);
-    
+
     // Clear form
     calendarUrlInput.value = '';
     document.getElementById('name-input').value = '';
-    
+
     updateScheduleSwitcher();
     closeCalendarModal();
-    
+
     // Small delay to ensure UI is updated before loading
     setTimeout(() => {
       loadScheduleData();
@@ -332,15 +435,15 @@ function updateScheduleSwitcher() {
 function switchSchedule(index) {
   // Prevent switching if already loading
   if (state.isLoading) return;
-  
+
   state.activeScheduleIndex = index;
   localStorage.setItem('activeScheduleIndex', index);
   updateScheduleSwitcher();
-  
+
   const schedule = state.schedules[index];
   if (schedule) {
     document.getElementById('weekrooster-title').textContent = `${schedule.name}'s weekrooster`;
-    
+
     // Small delay to ensure UI is updated before loading
     setTimeout(() => {
       loadScheduleData();
@@ -413,7 +516,7 @@ function animateWeekTransition(direction) {
 function goToNextWeek() {
   // Prevent navigation if already loading
   if (state.isLoading) return;
-  
+
   animateWeekTransition('next');
   state.currentWeek = getNextWeek(state.currentWeek.start);
   updateWeekDisplay();
@@ -423,7 +526,7 @@ function goToNextWeek() {
 function goToPreviousWeek() {
   // Prevent navigation if already loading
   if (state.isLoading) return;
-  
+
   animateWeekTransition('prev');
   state.currentWeek = getPreviousWeek(state.currentWeek.start);
   updateWeekDisplay();
@@ -434,11 +537,11 @@ function goToPreviousWeek() {
 function goToNextDay() {
   // Prevent navigation if already loading
   if (state.isLoading) return;
-  
+
   const nextDay = new Date(state.currentDay);
   nextDay.setDate(nextDay.getDate() + 1);
   state.currentDay = nextDay;
-  
+
   // Check if we need to load a new week's data
   if (nextDay > state.currentWeek.end) {
     state.currentWeek = getNextWeek(state.currentWeek.start);
@@ -453,11 +556,11 @@ function goToNextDay() {
 function goToPreviousDay() {
   // Prevent navigation if already loading
   if (state.isLoading) return;
-  
+
   const prevDay = new Date(state.currentDay);
   prevDay.setDate(prevDay.getDate() - 1);
   state.currentDay = prevDay;
-  
+
   // Check if we need to load a new week's data
   if (prevDay < state.currentWeek.start) {
     state.currentWeek = getPreviousWeek(state.currentWeek.start);
@@ -471,15 +574,15 @@ function goToPreviousDay() {
 
 function updateCurrentDayDisplay() {
   if (!currentDayDisplay) return;
-  
+
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Normalize to start of day
-  
+
   const currentDay = new Date(state.currentDay);
   currentDay.setHours(0, 0, 0, 0); // Normalize to start of day
-  
+
   const daysDiff = Math.floor((currentDay - today) / (1000 * 60 * 60 * 24));
-  
+
   let displayText;
   if (daysDiff === 0) {
     displayText = 'Vandaag';
@@ -494,7 +597,7 @@ function updateCurrentDayDisplay() {
       month: 'long' 
     });
   }
-  
+
   currentDayDisplay.textContent = displayText;
   if (mobileDayHeader) {
     mobileDayHeader.textContent = displayText;
@@ -611,16 +714,16 @@ async function loadScheduleData() {
     // Convert Google Calendar sharing URL to iCal format if needed
     if (url.includes('calendar.google.com') && !url.includes('/ical/')) {
       console.log('Converting Google Calendar URL to iCal format');
-      
+
       // Handle different Google Calendar URL formats
       let calendarId = null;
-      
+
       // Format: https://calendar.google.com/calendar/u/0?cid=bWRyb2Rlcm1vbmRAZ21haWwuY29t
       if (url.includes('cid=')) {
         const cidMatch = url.match(/cid=([^&]+)/);
         if (cidMatch) {
           let decodedCid = decodeURIComponent(cidMatch[1]);
-          
+
           // Check if the cid is base64 encoded (common for Gmail addresses)
           try {
             const base64Decoded = atob(decodedCid);
@@ -643,7 +746,7 @@ async function loadScheduleData() {
           calendarId = decodeURIComponent(srcMatch[1]);
         }
       }
-      
+
       if (calendarId) {
         url = `https://calendar.google.com/calendar/ical/${encodeURIComponent(calendarId)}/public/basic.ics`;
         console.log('Converted to iCal URL:', url);
@@ -670,7 +773,7 @@ async function loadScheduleData() {
         icalData = await proxyResponse.text();
       } catch (proxyError) {
         console.log('CORS proxy failed, trying with allorigins:', proxyError.message);
-        
+
         // Laatste poging met allorigins
         try {
           const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
@@ -679,11 +782,11 @@ async function loadScheduleData() {
             throw new Error(`AllOrigins fetch failed: ${allOriginsResponse.status} ${allOriginsResponse.statusText}`);
           }
           const allOriginsData = await allOriginsResponse.json();
-          
+
           if (allOriginsData.status && allOriginsData.status.http_code !== 200) {
             throw new Error(`Calendar server returned: ${allOriginsData.status.http_code}`);
           }
-          
+
           icalData = allOriginsData.contents;
         } catch (allOriginsError) {
           console.log('All methods failed:', allOriginsError.message);
@@ -703,15 +806,15 @@ async function loadScheduleData() {
     // Always update displays after loading data
     updateCurrentDayDisplay();
     updateWeekDisplay();
-    
+
     console.log('Rendering schedule for', isMobile() ? 'mobile' : 'desktop');
-    
+
     // Render both views to ensure they work on all devices
     renderScheduleTable();
     renderMobileSchedule();
   } catch (error) {
     console.error('Error loading schedule data:', error);
-    
+
     // Specifieke foutmeldingen voor verschillende scenario's
     if (error.message.includes('Calendar server returned: 404')) {
       state.error = `❌ Google Calendar: Deze calendar is niet publiek toegankelijk of bestaat niet. Ga naar je Google Calendar instellingen en maak de calendar publiek.`;
@@ -736,7 +839,7 @@ async function loadScheduleData() {
 // UI rendering functions
 function updateUIState() {
   console.log('Updating UI state:', { isLoading: state.isLoading, error: state.error });
-  
+
   // Desktop elements
   if (loadingIndicator && scheduleTable && calendarError) {
     if (state.isLoading) {
@@ -777,7 +880,7 @@ function updateUIState() {
       mobileScheduleTable.classList.remove('hidden');
       mobileCalendarError.classList.add('hidden');
     }
-  }
+    }
 }
 
 function getCurrentTimeSlot(timeSlots) {
@@ -873,15 +976,97 @@ function renderScheduleTable() {
             noteToggle.innerHTML = '📝';
             noteToggle.title = 'Toggle notities';
 
+            const colorToggle = document.createElement('button');
+            colorToggle.className = 'color-toggle';
+            colorToggle.innerHTML = '🎨';
+            colorToggle.title = 'Kies kleur';
+
             const noteArea = document.createElement('textarea');
             noteArea.className = 'note-area hidden';
             noteArea.placeholder = 'Voeg notities toe...';
+
+            const colorPicker = document.createElement('div');
+            colorPicker.className = 'color-picker hidden';
+
+            // Create comprehensive color palette
+            const colors = [
+              // Rood tinten
+              '#ff0000', '#ff3333', '#ff6666', '#ff9999', '#ffcccc',
+              '#cc0000', '#990000', '#660000', '#330000',
+
+              // Oranje tinten
+              '#ff6600', '#ff8533', '#ffa366', '#ffc299', '#ffe0cc',
+              '#cc5200', '#993d00', '#662900', '#331400',
+
+              // Geel tinten
+              '#ffff00', '#ffff33', '#ffff66', '#ffff99', '#ffffcc',
+              '#cccc00', '#999900', '#666600', '#333300',
+
+              // Groen tinten
+              '#00ff00', '#33ff33', '#66ff66', '#99ff99', '#ccffcc',
+              '#00cc00', '#009900', '#006600', '#003300',
+
+              // Blauw tinten
+              '#0000ff', '#3333ff', '#6666ff', '#9999ff', '#ccccff',
+              '#0000cc', '#000099', '#000066', '#000033',
+
+              // Paars tinten
+              '#8000ff', '#9933ff', '#b366ff', '#cc99ff', '#e6ccff',
+              '#6600cc', '#4d0099', '#330066', '#1a0033',
+
+              // Roze tinten
+              '#ff00ff', '#ff33ff', '#ff66ff', '#ff99ff', '#ffccff',
+              '#cc00cc', '#990099', '#660066', '#330033',
+
+              // Turquoise tinten
+              '#00ffff', '#33ffff', '#66ffff', '#99ffff', '#ccffff',
+              '#00cccc', '#009999', '#006666', '#003333',
+
+              // Grijs tinten
+              '#000000', '#333333', '#666666', '#999999', '#cccccc',
+              '#ffffff', '#f0f0f0', '#e0e0e0', '#d0d0d0', '#c0c0c0',
+
+              // Bruine tinten
+              '#8b4513', '#a0522d', '#cd853f', '#daa520', '#f4a460',
+              '#d2691e', '#bc8f8f', '#deb887', '#f5deb3', '#ffe4b5'
+            ];
+
+            // Add clear color option first
+            const clearColor = document.createElement('div');
+            clearColor.className = 'color-option clear-color';
+            clearColor.innerHTML = '×';
+            clearColor.title = 'Verwijder kleur';
+            clearColor.addEventListener('click', () => {
+              setLessonColor(eventDateTime, event.subject, null, eventBlock);
+              colorPicker.classList.add('hidden');
+            });
+            colorPicker.appendChild(clearColor);
+
+            colors.forEach(color => {
+              const colorOption = document.createElement('div');
+              colorOption.className = 'color-option';
+              colorOption.style.backgroundColor = color;
+              colorOption.addEventListener('click', () => {
+                setLessonColor(eventDateTime, event.subject, color, eventBlock);
+                colorPicker.classList.add('hidden');
+              });
+              colorPicker.appendChild(colorOption);
+            });
 
             // Load saved note if exists
             const eventDateTime = event.start.toISOString();
             const noteKey = `note_${eventDateTime}_${event.subject}`;
             const toggleKey = `noteToggle_${eventDateTime}_${event.subject}`;
+            const colorKey = `color_${eventDateTime}_${event.subject}`;
+
             noteArea.value = localStorage.getItem(noteKey) || '';
+
+            // Load saved color
+            const savedColor = localStorage.getItem(colorKey);
+            if (savedColor) {
+              eventBlock.style.backgroundColor = savedColor;
+              eventBlock.style.border = `2px solid ${savedColor}`;
+            }
 
             // Load saved toggle state
             const isVisible = localStorage.getItem(toggleKey) === 'true';
@@ -894,13 +1079,19 @@ function renderScheduleTable() {
               localStorage.setItem(toggleKey, !isNowVisible);
             });
 
+            colorToggle.addEventListener('click', () => {
+              colorPicker.classList.toggle('hidden');
+            });
+
             noteArea.addEventListener('input', () => {
               localStorage.setItem(noteKey, noteArea.value);
             });
 
             eventBlock.appendChild(eventInfo);
             eventBlock.appendChild(noteToggle);
+            eventBlock.appendChild(colorToggle);
             eventBlock.appendChild(noteArea);
+            eventBlock.appendChild(colorPicker);
           }
 
           cell.appendChild(eventBlock);
