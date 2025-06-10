@@ -23,7 +23,7 @@ Daarom zijn wij, **Martijn en Dion**, er helemaal klaar mee. We zijn overgestapt
 
 ## Installatie / Gebruik
 
-1. Ga naar [blauwwijzer.nl](https://blauwwijzer.nl)  
+1. Ga naar [blauwwijzer.pages.dev](https://blauwwijzer.pages.dev)  
 2. Log in met je Somtoday-account  
 3. Klaar! Je rooster staat voor je klaar
 
