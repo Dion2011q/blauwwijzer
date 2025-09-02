@@ -907,6 +907,11 @@ th {
   font-size: 1.2rem;
 }
 
+#title {
+    align-items: center;
+    
+}
+
 /* Mobile schedule styles */
 .mobile-schedule-container {
     display: none;
