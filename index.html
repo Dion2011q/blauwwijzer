@@ -23,7 +23,7 @@
             <ul class="headerul">
                 <li><a class="headerlink" href="index.html">Home</a></li>
                 <li><a class="headerlink" href="todo.html">Todo</a></li>
-                <li><a class="headerlink" href="notes.html"">Notes</a></li>
+                <li><a class="headerlink" href="notes.html">Notes</a></li>
                 <li><a class="headerlink" href="chat.html">Chat</a></li>
                 <li><a class="headerlink" href="leermiddelen.html">Leermiddelen</a></li>
                 <li><a class="headerlink" href="https://dnv.zportal.nl">Plannen</a></li>
@@ -45,10 +45,12 @@
                 <li><a href="notes.html">Notes</a></li>
                 <li><a href="chat.html">Chat</a></li>
                 <li><a href="leermiddelen.html">Leermiddelen</a></li>
-				<li><a href="https://dnv.zportal.nl">Plannen</a></li>
+                <li><a href="https://dnv.zportal.nl">Plannen</a></li>
             </ul>
         </nav>
     </header>
+
+    <div id="schedule-switcher"></div>
 
     <main>
         <div class="container">
@@ -89,7 +91,6 @@
                 </table>
             </div>
 
-            <!-- Desktop schedule container -->
             <div id="schedule-table-container">
                 <div id="loading-indicator" class="loading-indicator">
                     <div class="spinner"></div>
@@ -113,9 +114,6 @@
                     </thead>
                     <tbody id="schedule-body"></tbody>
                 </table>
-
-                <!-- NU-LIJN -->
-                <div id="now-line"></div>
             </div>
         </div>
 
@@ -143,37 +141,5 @@
 
     <script src="js/darkMode.js"></script>
     <script src="js/app.js"></script>
-    <script>
-        // NU-LIJN FUNCTIE
-        const nowLine = document.getElementById('now-line');
-
-        function updateNowLine() {
-            const scheduleTable = document.getElementById('schedule-table');
-            if (!scheduleTable) return;
-
-            const now = new Date();
-            const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-            const startMinutes = 8 * 60; // 08:00
-            const endMinutes = 16 * 60;  // 16:00
-
-            if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
-                nowLine.style.display = 'none';
-                return;
-            }
-
-            nowLine.style.display = 'block';
-
-            const tableHeight = scheduleTable.offsetHeight;
-            const totalMinutes = endMinutes - startMinutes;
-            const pixelsPerMinute = tableHeight / totalMinutes;
-            const y = (currentMinutes - startMinutes) * pixelsPerMinute;
-
-            nowLine.style.top = `${y}px`;
-        }
-
-        updateNowLine();
-        setInterval(updateNowLine, 60000);
-    </script>
 </body>
 </html>
