@@ -161,6 +161,21 @@ header {
     gap: 5px;
 }
 
+#schedule-table-container {
+  position: relative; /* belangrijk voor absolute positioning */
+}
+
+#now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ff4c4c; /* accentkleur, kan variabel zijn */
+  z-index: 10;
+  pointer-events: none;
+  transition: top 0.6s linear;
+}
+
 .schedule-add-btn, .schedule-switch-btn {
     background: none;
     border: none;
