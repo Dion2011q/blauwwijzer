@@ -12,6 +12,7 @@
     --accent: #3C66F5;
     --error: #E53E3E;
     --header: #4C49F5;
+    --break: #ADADAD;
 }
 
 /* Dark theme colors */
@@ -28,6 +29,7 @@
     --accent: #4C6EF5;
     --error: #FC8181;
     --header: #4C49F5;
+    --break: #4A5568;
 }
 
 * {
@@ -475,7 +477,7 @@ th {
 
 .schedule-block.break {
     min-height: 1.5em !important;
-    background-color: #4A5568;
+    background-color: var(--break);
     font-size: 0.65rem;
     padding: 0.25rem;
     display: flex;
