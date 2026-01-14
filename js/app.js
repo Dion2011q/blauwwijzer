@@ -989,9 +989,9 @@ function renderScheduleTable() {
             colorPicker.className = 'color-picker hidden';
 
             // Create comprehensive color palette
-            const colors = [
+            const colors = [//#ff6666
               // Rood tinten
-              '#ff0000', '#ff3333', '#ff6666', '#ff9999', '#ffcccc',
+              '#ff0000', '#ff3333', '#fffff1', '#ff9999', '#ffcccc',
               '#cc0000', '#990000', '#660000', '#330000',
 
               // Oranje tinten
