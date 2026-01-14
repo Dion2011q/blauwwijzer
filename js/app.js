@@ -225,7 +225,7 @@ function renderMobileSchedule() {
     // Create comprehensive color palette
     const colors = [
       // Rood tinten
-      '#ff0000', '#ff3333', '#ff6666', '#ff9999', '#ffcccc',
+      '#ff0000', '#ff3333', '#ffffff', '#ff9999', '#ffcccc',
       '#cc0000', '#990000', '#660000', '#330000',
 
       // Oranje tinten
