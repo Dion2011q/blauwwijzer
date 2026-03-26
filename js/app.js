@@ -80,6 +80,23 @@ function initApp() {
     });
   }
 
+  const importBtn = document.getElementById('import-btn');
+  const importFileInput = document.getElementById('import-file-input');
+  if (importBtn && importFileInput) {
+    importBtn.addEventListener('click', () => {
+      importFileInput.click();
+    });
+    importFileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        importLocalData(e.target.files[0]);
+        // Reload the page after import
+        setTimeout(() => {
+          location.reload();
+        }, 100);
+      }
+    });
+  }
+
   if (prevWeekBtn) prevWeekBtn.addEventListener('click', goToPreviousWeek);
   if (nextWeekBtn) nextWeekBtn.addEventListener('click', goToNextWeek);
 
@@ -430,6 +447,12 @@ function updateScheduleSwitcher() {
     scheduleContainer.appendChild(deleteButton);
     switcher.appendChild(scheduleContainer);
   });
+
+  const exportButton = document.createElement('button');
+  exportButton.innerHTML = '📤';
+  exportButton.className = 'schedule-export-btn';
+  exportButton.onclick = downloadLocalData;
+  switcher.appendChild(exportButton);
 }
 
 function switchSchedule(index) {
