@@ -117,7 +117,6 @@
             </div>
         </div>
 
-        <button id="calendar-settings-btn" class="btn-circle">📅</button>
     </main>
 
     <div id="calendar-modal" class="modal">
@@ -128,6 +127,10 @@
               <input type="url" id="calendar-url-input" placeholder="Voer je SomToday/Magister agenda URL in (ical)" required />
               <button type="submit" id="save-calendar-btn" class="btn">Opslaan</button>
             </form>
+            <div class="import-section">
+              <input type="file" id="import-file-input" accept=".json" style="display: none;" />
+              <button id="save-calendar-btn" class="btn">Importeren</button>
+            </div>
             <p class="modal-help">
               Hulp nodig? <a href="readme.html">Bekijk de handleiding</a>
             </p>
@@ -140,6 +143,8 @@
     </footer>
 
     <script src="js/darkMode.js"></script>
+    <script src="js/save.js"></script>
+    <script src="js/import.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
