@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minecraft Hotbar Trainer</title>
+<style>
+body{font-family:Arial,sans-serif;background:#1e1e1e;color:#fff;text-align:center;margin:0;padding-top:30px}
+.container{max-width:1000px;margin:auto}
+.mode-info{font-size:22px;margin-bottom:20px}
+#target{font-size:140px;font-weight:bold;margin:25px 0}
+#cpsBox{font-size:32px;margin-bottom:15px}
+#stats{font-size:26px}
+#accuracy,#reactionTime{margin-top:10px;font-size:22px}
+#hotbar{display:flex;justify-content:center;gap:6px;margin-top:50px}
+.slot{width:70px;height:70px;background:#2b2b2b;border:3px solid #555;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:bold;transition:all .1s}
+.slot.active{border:4px solid #fff;background:#444;transform:scale(1.1)}
+.slot.correct{background:#1f8f1f}
+.slot.wrong{background:#a31e1e}
+.help{margin-top:35px;color:#bbb;font-size:18px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Minecraft Hotbar Trainer</h1>
+<div class="mode-info">Druk op <b>M</b> om te wisselen tussen:<br><span id="mode">Willekeurig</span></div>
+<div id="target">START</div>
+<div id="cpsBox">CPS: <span id="cps">0.0</span></div>
+<div id="stats">Goed: <span id="good">0</span> | Fout: <span id="bad">0</span></div>
+<div id="accuracy">Accuracy: <span id="accuracyValue">100</span>%</div>
+<div id="reactionTime">Reactietijd: <span id="reaction">0</span> ms</div>
+<div id="hotbar">
+<div class="slot" data-slot="1">1</div>
+<div class="slot" data-slot="2">2</div>
+<div class="slot" data-slot="3">3</div>
+<div class="slot" data-slot="4">4</div>
+<div class="slot" data-slot="5">5</div>
+<div class="slot" data-slot="6">6</div>
+<div class="slot" data-slot="7">7</div>
+<div class="slot" data-slot="8">8</div>
+<div class="slot" data-slot="9">9</div>
+</div>
+<div class="help">
+1→1 | 2→2 | 3→3 | 4→R | 5→F | 6→V | 7→C | 8→X | 9→4<br>
+M = Wissel modus
+</div>
+</div>
+
+<script>
+const slotToKey={1:"1",2:"2",3:"3",4:"R",5:"F",6:"V",7:"C",8:"X",9:"4"};
+const slots=[1,2,3,4,5,6,7,8,9];
+
+let randomMode=true;
+let index=0;
+let currentSlot=1;
+let currentKey="1";
+let previousRandomSlot=null;
+let good=0;
+let bad=0;
+let clicks=[];
+let targetStartTime=Date.now();
+
+const targetEl=document.getElementById("target");
+const modeEl=document.getElementById("mode");
+
+function highlightSlot(slot){
+ document.querySelectorAll(".slot").forEach(e=>e.classList.remove("active"));
+ document.querySelector(`[data-slot="${slot}"]`).classList.add("active");
+}
+
+function flash(slot,cls){
+ const el=document.querySelector(`[data-slot="${slot}"]`);
+ el.classList.add(cls);
+ setTimeout(()=>el.classList.remove(cls),150);
+}
+
+function getRandomSlot(){
+ let slot;
+ do{
+   slot=slots[Math.floor(Math.random()*slots.length)];
+ }while(slot===previousRandomSlot);
+ previousRandomSlot=slot;
+ return slot;
+}
+
+function nextTarget(){
+ if(randomMode){
+   currentSlot=getRandomSlot();
+ }else{
+   currentSlot=slots[index];
+   index++;
+   if(index>=slots.length) index=0;
+ }
+ currentKey=slotToKey[currentSlot];
+ targetEl.textContent=currentSlot;
+ highlightSlot(currentSlot);
+ targetStartTime=Date.now();
+}
+
+function updateStats(){
+ document.getElementById("good").textContent=good;
+ document.getElementById("bad").textContent=bad;
+ const total=good+bad;
+ document.getElementById("accuracyValue").textContent=total?((good/total)*100).toFixed(1):100;
+}
+
+function updateCPS(){
+ const now=Date.now();
+ clicks=clicks.filter(t=>now-t<1000);
+ document.getElementById("cps").textContent=clicks.length.toFixed(1);
+}
+
+function toggleMode(){
+ randomMode=!randomMode;
+ modeEl.textContent=randomMode?"Willekeurig":"Op volgorde";
+ if(!randomMode) index=0;
+ nextTarget();
+}
+
+document.addEventListener("keydown",e=>{
+ const key=e.key.toUpperCase();
+
+ if(key==="M"){
+   toggleMode();
+   return;
+ }
+
+ clicks.push(Date.now());
+
+ if(key===currentKey){
+   good++;
+   document.getElementById("reaction").textContent=Date.now()-targetStartTime;
+   flash(currentSlot,"correct");
+   nextTarget();
+ }else{
+   bad++;
+   flash(currentSlot,"wrong");
+ }
+
+ updateStats();
+});
+
+setInterval(updateCPS,50);
+nextTarget();
+</script>
+</body>
+</html>
