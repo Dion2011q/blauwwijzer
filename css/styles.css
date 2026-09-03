@@ -205,7 +205,7 @@ header {
 }
 
 .navdiv {
-    aling-items: center;
+    align-items: center;
     display: flex;
     justify-content: center; /* Centraal in de navdiv */
 }
