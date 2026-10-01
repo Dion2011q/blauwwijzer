@@ -52,8 +52,51 @@ function isMobile() {
   return window.innerWidth <= 768;
 }
 
+// Cleanup old notes, colors and note toggles
+function cleanupOldScheduleData() {
+  const now = Date.now();
+  const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+  const cutoff = now - maxAge;
+
+  const keysToRemove = [];
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+
+    if (!key) continue;
+
+    if (
+      key.startsWith('note_') ||
+      key.startsWith('color_') ||
+      key.startsWith('noteToggle_')
+    ) {
+      const match = key.match(
+        /^(?:note|color|noteToggle)_(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)_/
+      );
+
+      if (!match) continue;
+
+      const eventDate = new Date(match[1]).getTime();
+
+      if (isNaN(eventDate)) continue;
+
+      if (eventDate < cutoff) {
+        keysToRemove.push(key);
+      }
+    }
+  }
+
+  keysToRemove.forEach(key => {
+    localStorage.removeItem(key);
+  });
+
+  console.log(`Cleanup: ${keysToRemove.length} oude notities/kleuren/toggles verwijderd.`);
+}
+
 // Initialize the app
 function initApp() {
+  cleanupOldScheduleData();
+
   // Show modal immediately if no calendar URL is set
   if (!state.schedules || state.schedules.length === 0) {
     openCalendarModal();
@@ -680,6 +723,7 @@ function handleMobileSwipe() {
     }
   }
 }
+
 function updateWeekDisplay() {
   const startDate = state.currentWeek.start.toLocaleDateString('nl-NL', { 
     day: 'numeric', 
