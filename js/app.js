@@ -498,6 +498,16 @@ function updateScheduleSwitcher() {
   switcher.appendChild(exportButton);
 }
 
+function formatScheduleTitle(name) {
+  const trimmedName = name.trim();
+
+  // Namen die op een s eindigen krijgen alleen een apostrof.
+  // Bijvoorbeeld: "Laurens' weekrooster" en "Martijn's weekrooster".
+  return /s$/i.test(trimmedName)
+    ? `${trimmedName}' weekrooster`
+    : `${trimmedName}'s weekrooster`;
+}
+
 function switchSchedule(index) {
   // Prevent switching if already loading
   if (state.isLoading) return;
@@ -508,7 +518,7 @@ function switchSchedule(index) {
 
   const schedule = state.schedules[index];
   if (schedule) {
-    document.getElementById('weekrooster-title').textContent = `${schedule.name}'s weekrooster`;
+    document.getElementById('weekrooster-title').textContent = formatScheduleTitle(schedule.name);
 
     // Small delay to ensure UI is updated before loading
     setTimeout(() => {
@@ -765,7 +775,7 @@ async function loadScheduleData() {
   }
 
   // Update title with schedule name
-  document.getElementById('weekrooster-title').textContent = `${activeSchedule.name}'s weekrooster`;
+  document.getElementById('weekrooster-title').textContent = formatScheduleTitle(activeSchedule.name);
 
   state.isLoading = true;
   state.error = null;
