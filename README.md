@@ -1,32 +1,27 @@
 # Blauwwijzer
 
-**Blauwwijzer** is een snelle, schone en bugvrije rooster-app gebaseerd op de Somtoday API. Koppel je Somtoday-account en bekijk je rooster zonder gedoe, advertenties of vage bugs.
-
-## Waarom Blauwwijzer?
-
-Groenwijzer? Ja, dat kenden we ook. Maar:
-
-- **Advertenties** overal  
-- **Bugs** die blijven terugkomen  
-- **Trage interface** die niet werkt als je 'm nodig hebt  
-
-Daarom zijn wij, **Martijn en Dion**, er helemaal klaar mee. We zijn overgestapt op onze eigen oplossing: **Blauwwijzer**.
+**Blauwwijzer** is een snelle rooster-app gebaseerd op de Somtoday-, Magister- en Google Agenda-API. Koppel je agendalink en bekijk je rooster zonder gedoe of advertenties.
 
 ## Features
 
-- Koppel je Somtoday-account veilig via de officiële API
-- Bekijk je rooster in één oogopslag
-- Geen advertenties, geen trackers
-- Supersnelle laadtijd
-- Eenvoudig, helder design
-- Volledig open-source
+* Koppel je agenda veilig via de officiële API.
+* Bekijk je rooster in één oogopslag.
+* Geen advertenties en geen trackers.
+* Snelle laadtijd.
+* Eenvoudig, rustig en flexibel design.
+* Eenvoudig te importeren vanaf andere apparaten met Blauwwijzer.
+* Volledig open-source: [GitHub](https://github.com/Dion2011q/blauwwijzer).
 
 ## Installatie / Gebruik
 
-1. Ga naar [blauwwijzer.pages.dev](https://blauwwijzer.pages.dev)  
-2. Log in met je Somtoday-account  
-3. Klaar! Je rooster staat voor je klaar
+1. Ga naar [Blauwwijzer](https://blauwwijzer.pages.dev).
+2. Voer je naam en agendalink in (vaak te vinden in de instellingen van je roostersysteem).
+3. Klaar! Je rooster staat voor je klaar.
+
+## Waarschuwing
+
+De importeerfunctie verwijdert alle oude data!
 
 ## Open Source
 
-Blauwwijzer is gebouwd met liefde door Martijn en Dion. Geen commercieel gedoe, gewoon een goede app die wél werkt.
+Blauwwijzer is gebouwd door Martijn en Dion. Geen commercieel gedoe, gewoon een eenvoudige rooster-app die doet wat hij moet doen.
